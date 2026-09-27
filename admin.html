@@ -5,32 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booth 1 Admin | Stock Control</title>
     <style>
-        body { 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body { 
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: #0a0705; 
             color: white; 
-            padding: 20px; 
-            text-align: center; 
-            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 16px 24px;
         }
-        h1 { color: #c5a059; font-size: 1.5rem; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 2px; }
+
+        h1 { 
+            color: #c5a059; 
+            font-size: 1.25rem; 
+            text-align: center;
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+
+        /* Side-by-Side Landscape Grid */
+        .cards-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            max-width: 960px;
+            height: calc(100vh - 80px);
+            max-height: 420px;
+            justify-content: center;
+            align-items: stretch;
+        }
         
         .card { 
+            flex: 1;
             background: #16110e; 
             border: 1px solid rgba(197, 160, 89, 0.35); 
-            padding: 24px; 
-            margin-bottom: 24px; 
-            border-radius: 8px; 
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 18px; 
+            border-radius: 12px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
         }
-        .card h2 { margin: 0; font-size: 1.2rem; color: #e6c88b; }
+
+        .card h2 { 
+            margin: 0; 
+            font-size: 1.1rem; 
+            color: #e6c88b; 
+        }
         
         .count { 
-            font-size: 3.8rem; 
+            font-size: 3.2rem; 
             font-weight: bold; 
-            margin: 5px 0; 
+            line-height: 1;
+            margin: 4px 0;
             color: #ffffff;
         }
 
@@ -40,18 +80,25 @@
             background: rgba(197, 160, 89, 0.12);
             border: 1px solid rgba(197, 160, 89, 0.4);
             color: #e6c88b;
-            font-size: 0.88rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 6px;
-            margin-bottom: 18px;
             letter-spacing: 0.5px;
+            width: 100%;
+            max-width: 260px;
         }
         
-        .btn-group { display: flex; gap: 15px; justify-content: center; margin-bottom: 16px; }
+        .btn-group { 
+            display: flex; 
+            gap: 12px; 
+            width: 100%;
+            justify-content: center; 
+        }
+
         button { 
             flex: 1; 
-            padding: 16px; 
+            padding: 14px; 
             font-size: 1.8rem; 
             font-weight: bold;
             border: none; 
@@ -59,6 +106,7 @@
             cursor: pointer; 
             transition: opacity 0.2s;
         }
+
         button:active { opacity: 0.7; }
         
         .btn-minus { background: #d9534f; color: white; }
@@ -67,7 +115,8 @@
         /* Direct Input Control Styling */
         .set-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+            width: 100%;
             justify-content: center;
             align-items: center;
         }
@@ -76,10 +125,10 @@
             background: #0a0705;
             border: 1px solid rgba(197, 160, 89, 0.5);
             color: white;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
-            font-size: 1rem;
-            width: 130px;
+            font-size: 0.9rem;
+            flex: 1;
             text-align: center;
             outline: none;
         }
@@ -91,9 +140,9 @@
         .btn-set {
             background: #c5a059;
             color: #0a0705;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 700;
-            padding: 12px 18px;
+            padding: 10px 14px;
             flex: none;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -105,39 +154,41 @@
 
     <h1>Admin Panel</h1>
 
-    <!-- Nasi Goreng Control -->
-    <div class="card">
-        <h2>🍛 Nasi Goreng</h2>
-        <div class="count" id="nasi-count">100</div>
-        
-        <!-- Samples Served Display Box -->
-        <div class="served-box" id="nasi-served">🍽️ Samples Served: 0 / 100</div>
+    <div class="cards-wrapper">
+        <!-- Nasi Goreng Control -->
+        <div class="card">
+            <h2>🍛 Nasi Goreng</h2>
+            <div class="count" id="nasi-count">100</div>
+            
+            <div class="served-box" id="nasi-served">🍽️ Samples Served: 0 / 100</div>
 
-        <div class="btn-group">
-            <button class="btn-minus" onclick="updateStock('nasi', -1)">−</button>
-            <button class="btn-plus" onclick="updateStock('nasi', 1)">+</button>
+            <div class="btn-group">
+                <button class="btn-minus" onclick="updateStock('nasi', -1)">−</button>
+                <button class="btn-plus" onclick="updateStock('nasi', 1)">+</button>
+            </div>
+            
+            <div class="set-group">
+                <input type="number" id="nasi-input" placeholder="Enter stock" min="0">
+                <button class="btn-set" onclick="setExactStock('nasi')">Set Stock</button>
+            </div>
         </div>
-        <div class="set-group">
-            <input type="number" id="nasi-input" placeholder="Enter stock" min="0">
-            <button class="btn-set" onclick="setExactStock('nasi')">Set Stock</button>
-        </div>
-    </div>
 
-    <!-- Wedang Jahe Control -->
-    <div class="card">
-        <h2>🍵 Wedang Jahe</h2>
-        <div class="count" id="wedang-count">100</div>
+        <!-- Wedang Jahe Control -->
+        <div class="card">
+            <h2>🍵 Wedang Jahe</h2>
+            <div class="count" id="wedang-count">100</div>
 
-        <!-- Samples Served Display Box -->
-        <div class="served-box" id="wedang-served">🍽️ Samples Served: 0 / 100</div>
+            <div class="served-box" id="wedang-served">🍽️ Samples Served: 0 / 100</div>
 
-        <div class="btn-group">
-            <button class="btn-minus" onclick="updateStock('wedang', -1)">−</button>
-            <button class="btn-plus" onclick="updateStock('wedang', 1)">+</button>
-        </div>
-        <div class="set-group">
-            <input type="number" id="wedang-input" placeholder="Enter stock" min="0">
-            <button class="btn-set" onclick="setExactStock('wedang')">Set Stock</button>
+            <div class="btn-group">
+                <button class="btn-minus" onclick="updateStock('wedang', -1)">−</button>
+                <button class="btn-plus" onclick="updateStock('wedang', 1)">+</button>
+            </div>
+
+            <div class="set-group">
+                <input type="number" id="wedang-input" placeholder="Enter stock" min="0">
+                <button class="btn-set" onclick="setExactStock('wedang')">Set Stock</button>
+            </div>
         </div>
     </div>
 
