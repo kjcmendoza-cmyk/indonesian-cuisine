@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booth 1 Admin | Stock Control</title>
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0a0705; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            margin: 0;
+        }
+        h1 { color: #c5a059; font-size: 1.5rem; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .card { 
+            background: #16110e; 
+            border: 1px solid rgba(197, 160, 89, 0.35); 
+            padding: 24px; 
+            margin-bottom: 24px; 
+            border-radius: 8px; 
+        }
+        .card h2 { margin: 0; font-size: 1.2rem; color: #e6c88b; }
+        
+        .count { 
+            font-size: 4rem; 
+            font-weight: bold; 
+            margin: 10px 0; 
+            color: #ffffff;
+        }
+        
+        .btn-group { display: flex; gap: 15px; justify-content: center; }
+        button { 
+            flex: 1; 
+            padding: 20px; 
+            font-size: 2rem; 
+            font-weight: bold;
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.7; }
+        
+        .btn-minus { background: #d9534f; color: white; }
+        .btn-plus { background: #4caf50; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>Indonesia Admin Panel</h1>
+
+    <!-- Nasi Goreng Control -->
+    <div class="card">
+        <h2>🍛 Nasi Goreng</h2>
+        <div class="count" id="nasi-count">50</div>
+        <div class="btn-group">
+            <button class="btn-minus" onclick="updateStock('nasi', -1)">−</button>
+            <button class="btn-plus" onclick="updateStock('nasi', 1)">+</button>
+        </div>
+    </div>
+
+    <!-- Wedang Jahe Control -->
+    <div class="card">
+        <h2>🍵 Wedang Jahe</h2>
+        <div class="count" id="wedang-count">50</div>
+        <div class="btn-group">
+            <button class="btn-minus" onclick="updateStock('wedang', -1)">−</button>
+            <button class="btn-plus" onclick="updateStock('wedang', 1)">+</button>
+        </div>
+    </div>
+
+    <script>
+        /* 
+         * NOTE: This currently uses localStorage for demonstration.
+         * To sync live with visitor's phones, replace this logic 
+         * with Firebase Realtime Database reads/writes.
+         */
+        let stocks = {
+            nasi: parseInt(localStorage.getItem('nasiStock')) || 50,
+            wedang: parseInt(localStorage.getItem('wedangStock')) || 50
+        };
+
+        function updateUI() {
+            document.getElementById('nasi-count').innerText = stocks.nasi;
+            document.getElementById('wedang-count').innerText = stocks.wedang;
+        }
+
+        function updateStock(item, change) {
+            stocks[item] += change;
+            
+            // Prevent going below 0
+            if (stocks[item] < 0) stocks[item] = 0; 
+            
+            localStorage.setItem(item + 'Stock', stocks[item]);
+            updateUI();
+        }
+
+        // Initialize UI on load
+        updateUI();
+    </script>
+
+</body>
+</html>
