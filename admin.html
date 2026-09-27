@@ -72,34 +72,51 @@
         </div>
     </div>
 
-    <script>
-        /* 
-         * NOTE: This currently uses localStorage for demonstration.
-         * To sync live with visitor's phones, replace this logic 
-         * with Firebase Realtime Database reads/writes.
-         */
-        let stocks = {
-            nasi: parseInt(localStorage.getItem('nasiStock')) || 50,
-            wedang: parseInt(localStorage.getItem('wedangStock')) || 50
+    <!-- Firebase SDK & Live Sync Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // Your Web App's Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdUDRkUqEamY_lscdAeSNlhBZWs-EgNvU",
+            authDomain: "basil--n-bowl-kiosk-system.firebaseapp.com",
+            databaseURL: "https://basil--n-bowl-kiosk-system-default-rtdb.firebaseio.com",
+            projectId: "basil--n-bowl-kiosk-system",
+            storageBucket: "basil--n-bowl-kiosk-system.firebasestorage.app",
+            messagingSenderId: "282044269599",
+            appId: "1:282044269599:web:299b5406ef8ab9e27a012a",
+            measurementId: "G-45ZJB5EE0W"
         };
 
-        function updateUI() {
-            document.getElementById('nasi-count').innerText = stocks.nasi;
-            document.getElementById('wedang-count').innerText = stocks.wedang;
-        }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        function updateStock(item, change) {
-            stocks[item] += change;
+        // Track current stocks locally to do math
+        let currentStocks = { nasi: 50, wedang: 50 };
+
+        // Listen for live updates from Firebase to display on screen
+        const stocksRef = ref(db, 'stocks');
+        onValue(stocksRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                currentStocks = data;
+                document.getElementById('nasi-count').innerText = currentStocks.nasi !== undefined ? currentStocks.nasi : 50;
+                document.getElementById('wedang-count').innerText = currentStocks.wedang !== undefined ? currentStocks.wedang : 50;
+            }
+        });
+
+        // Attach function to window so HTML buttons can trigger it
+        window.updateStock = function(item, change) {
+            let newCount = (currentStocks[item] !== undefined ? currentStocks[item] : 50) + change;
             
             // Prevent going below 0
-            if (stocks[item] < 0) stocks[item] = 0; 
+            if (newCount < 0) newCount = 0; 
             
-            localStorage.setItem(item + 'Stock', stocks[item]);
-            updateUI();
-        }
-
-        // Initialize UI on load
-        updateUI();
+            // Push new number to Firebase
+            set(ref(db, 'stocks/' + item), newCount);
+        };
     </script>
 
 </body>
