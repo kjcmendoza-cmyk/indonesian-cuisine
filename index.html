@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang | Esteemed Royal Dining</title>
+    <!-- Google Fonts for Royal Serif Aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0705;
+            --card-bg: rgba(22, 17, 14, 0.9);
+            --gold-primary: #c5a059;
+            --gold-light: #e6c88b;
+            --gold-glow: rgba(197, 160, 89, 0.35);
+            --text-main: #f4efea;
+            --text-muted: #b5a89e;
+            --border-gold: rgba(197, 160, 89, 0.35);
+            --warn-red: #d9534f;
+            --safe-green: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Full Screen View System */
+        .page-view {
+            display: none;
+            min-height: 100vh;
+            width: 100%;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Fixed Header Navigation for Mobile Compatibility */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: rgba(10, 7, 5, 0.95);
+            border-bottom: 1px solid var(--border-gold);
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-back {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-light);
+            padding: 8px 12px;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active {
+            background: var(--gold-primary);
+            color: #0a0705;
+        }
+
+        .brand-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            font-weight: 700;
+            white-space: nowrap;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* HERO / HOME PAGE */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 24px;
+            background: linear-gradient(180deg, rgba(10, 7, 5, 0.6) 0%, rgba(10, 7, 5, 0.98) 100%), 
+                        url('https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+        }
+
+        .hero-subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 420px;
+            margin-bottom: 36px;
+            font-weight: 300;
+        }
+
+        /* Hero Dual Action Buttons */
+        .cta-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn-royal {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 0.85rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--gold-light);
+            background: rgba(10, 7, 5, 0.7);
+            border: 1px solid var(--gold-primary);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .btn-royal:active {
+            background: var(--gold-primary);
+            color: #0a0705;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* CONTENT CONTAINER */
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        .page-header-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .page-header-sub {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        /* ROYAL CARD STYLE */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+
+        /* Dish Banner Image Container */
+        .card-img-container {
+            width: 100%;
+            height: auto;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 18px;
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            background: #0a0705;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-img-container img {
+            transform: scale(1.02);
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--gold-light);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 18px;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .ingredients-box {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding-top: 14px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            margin-bottom: 16px;
+        }
+
+        .ingredients-box strong {
+            color: var(--gold-primary);
+        }
+
+        /* Allergen Badges */
+        .allergen-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            padding: 8px 12px;
+            border-radius: 2px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .allergen-badge.warn {
+            background: rgba(217, 83, 79, 0.15);
+            border: 1px solid var(--warn-red);
+            color: #ff9999;
+        }
+
+        .allergen-badge.safe {
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid var(--safe-green);
+            color: #a3e2a5;
+        }
+
+        /* History Timeline Card */
+        .history-card {
+            border-left: 2px solid var(--gold-primary);
+            padding-left: 18px;
+            margin-bottom: 24px;
+        }
+
+        .history-year {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            color: var(--gold-primary);
+            font-weight: 700;
+        }
+
+        .history-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        /* Reaction Bar */
+        .reaction-bar {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(197, 160, 89, 0.2);
+        }
+
+        .reaction-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-react {
+            flex: 1;
+            background: rgba(10, 7, 5, 0.6);
+            border: 1px solid var(--border-gold);
+            color: var(--gold-primary);
+            padding: 12px 6px;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-react:hover, .btn-react:active {
+            border-color: var(--gold-light);
+            background: rgba(197, 160, 89, 0.18);
+            color: #ffffff;
+            box-shadow: 0 0 12px var(--gold-glow);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid var(--border-gold);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        footer strong {
+            color: var(--gold-primary);
+        }
+
+        /* Canvas Overlay for Particle Confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- PAGE 1: HOME LANDING SCREEN -->
+    <section id="page-home" class="page-view active">
+        <div class="hero">
+            <span class="hero-subtitle">International Food and Culture Festival 2026</span>
+            <h1 class="hero-title">Selamat Datang</h1>
+            <p class="hero-desc">Enjoy the rich flavors and authentic recipes of Indonesia, lovingly prepared for you today at Arrupe Hall.</p>
+            
+            <div class="cta-container">
+                <button class="btn-royal" onclick="navigateTo('menu')">MENU</button>
+                <button class="btn-royal" onclick="navigateTo('history')">OUR HISTORY</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PAGE 2: MENU PAGE -->
+    <section id="page-menu" class="page-view">
+        <header class="top-nav">
+            <button class="btn-back" onclick="navigateTo('home')">← HOME</button>
+            <div class="brand-logo">Selamat Datang</div>
+        </header>
+
+        <main class="container">
+            <h1 class="page-header-title">Our Menu Offerings</h1>
+            <p class="page-header-sub">Bite-Sized Tasting Samples</p>
+
+            <!-- Item 1: Nasi Goreng -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="d37bf17c96e03b533f0f4b1c9b130011.jpg" alt="Nasi Goreng">
+                </div>
+                <h2 class="card-title">Nasi Goreng</h2>
+                <span class="card-subtitle">Indonesian Caramelized Fried Rice</span>
+                
+                <p class="card-description">
+                    Indonesia's ultimate comfort dish. It combines warm rice, savory ground beef, and sweet Kecap Manis with a touch of chili heat, topped off with crispy shallots for a wonderful crunch.
+                </p>
+
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Rice, Ground Beef, Kecap Manis, Sambal Oelek, Garlic, Onion, Scallions, Crispy Shallots, Shrimp Paste.
+                </div>
+
+                <div class="allergen-badge warn">
+                    ⚠️ ALLERGEN NOTICE: Contains Shellfish/Crustaceans (Shrimp Paste) and Soy
+                </div>
+            </article>
+
+            <!-- Item 2: Wedang Jahe -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="b290f49da25c8870856ba0e79897f617.jpg" alt="Wedang Jahe">
+                </div>
+                <h2 class="card-title">Wedang Jahe</h2>
+                <span class="card-subtitle">Traditional Javanese Spiced Ginger Brew</span>
+                
+                <p class="card-description">
+                    A comforting homemade tea brewed by simmering fresh ginger root with natural Muscovado sugar. It delivers a soothing, cozy warmth with every single sip.
+                </p>
+
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Fresh Ginger Root, Muscovado Sugar, Purified Water.
+                </div>
+
+                <div class="allergen-badge safe">
+                    ✅ ALLERGEN-FREE: Safe for everyone (100% Vegan)
+                </div>
+            </article>
+
+            <!-- Interactive Taste Review -->
+            <div class="reaction-bar">
+                <p class="reaction-title">Share Your Culinary Experience</p>
+                <div class="btn-group">
+                    <button class="btn-react" onclick="triggerReaction('Exquisite Flavor')">Exquisite Flavor</button>
+                    <button class="btn-react" onclick="triggerReaction('Authentic Spice')">Authentic Spice</button>
+                    <button class="btn-react" onclick="triggerReaction('Warm & Soothing')">Warm & Soothing</button>
+                </div>
+            </div>
+
+            <footer>
+                <p><strong>International Food and Culture Festival 2026</strong></p>
+                <p style="margin-top: 4px;">Arrupe Hall • Booth 1 (Indonesia)</p>
+            </footer>
+        </main>
+    </section>
+
+    <!-- PAGE 3: HISTORY PAGE -->
+    <section id="page-history" class="page-view">
+        <header class="top-nav">
+            <button class="btn-back" onclick="navigateTo('home')">← HOME</button>
+            <div class="brand-logo">Selamat Datang</div>
+        </header>
+
+        <main class="container">
+            <h1 class="page-header-title">Our Culinary History</h1>
+            <p class="page-header-sub">Tales of Indonesian Heritage</p>
+
+            <article class="card">
+                <h2 class="card-title">The Royal Cuisine</h2>
+                <span class="card-subtitle">From Palaces to Everyday Tables</span>
+                <p class="card-description" style="margin-bottom: 24px;">
+                    Indonesian cooking is a rich tradition spread across thousands of islands. From royal feast halls to everyday kitchens, its recipes focus on bringing out deep umami, natural sweetness, and comforting spices.
+                </p>
+
+                <div class="history-card">
+                    <div class="history-year">Nasi Goreng: Zero Waste Tradition</div>
+                    <div class="history-text">
+                        This famous fried rice comes from a thoughtful habit of never letting good food go to waste. Leftover rice was brought to life using sweet soy sauce and savory shrimp paste, turning humble leftovers into something extraordinary.
+                    </div>
+                </div>
+
+                <div class="history-card">
+                    <div class="history-year">Wedang Jahe: The Javanese Remedy</div>
+                    <div class="history-text">
+                        In Java, Wedang means warm drink and Jahe means ginger. Originally served in the royal courts of Central Java, host families prepared this herbal drink to welcome honored guests with warmth, health, and vitality.
+                    </div>
+                </div>
+            </article>
+
+            <article class="card" style="text-align: center;">
+                <h2 class="card-title" style="font-size: 1.3rem;">Prepared By:</h2>
+                <p class="card-description" style="font-size: 0.85rem; color: var(--gold-light); margin-top: 8px;">
+                    Ablanque, Mendoza, Morales, Argame, Gaw, Mambaje, and Paglas
+                </p>
+            </article>
+
+            <footer>
+                <p><strong>International Food and Culture Festival 2026</strong></p>
+                <p style="margin-top: 4px;">Arrupe Hall • September 30, 2026</p>
+            </footer>
+        </main>
+    </section>
+
+    <!-- Firebase SDK & Web App Interactive Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // Your Web App's Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyADUDRKUqEamY_lscdAESNlhBZWs-EgNvU",
+            authDomain: "basil--n-bowl-kiosk-system.firebaseapp.com",
+            databaseURL: "https://basil--n-bowl-kiosk-system-default-rtdb.firebaseio.com",
+            projectId: "basil--n-bowl-kiosk-system",
+            storageBucket: "basil--n-bowl-kiosk-system.firebasestorage.app",
+            messagingSenderId: "282044269599",
+            appId: "1:282044269599:web:299b5406ef8ab9e27a012a"
+        };
+
+        // Initialize Firebase & Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Screen Navigation Function
+        window.navigateTo = function(pageId) {
+            document.querySelectorAll('.page-view').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            window.scrollTo(0, 0);
+        };
+
+        // Live Reaction Handler (Saves to Firebase + Confetti Burst)
+        window.triggerReaction = function(reactionText) {
+            // Push reaction to Firebase database
+            push(ref(db, 'booth_reactions'), {
+                reaction: reactionText,
+                timestamp: new Date().toISOString()
+            });
+
+            // Trigger particle animation burst
+            for (let i = 0; i < 35; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2 + 100,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.8) * 12,
+                    color: ['#c5a059', '#e6c88b', '#d9534f', '#ffffff'][Math.floor(Math.random() * 4)],
+                    size: Math.random() * 6 + 3,
+                    alpha: 1
+                });
+            }
+        };
+
+        // Canvas Particles Confetti System
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25;
+                p.alpha -= 0.02;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(p.alpha, 0);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                if (p.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
