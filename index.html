@@ -180,6 +180,17 @@
             box-shadow: 0 0 20px var(--gold-glow);
         }
 
+        /* PAGE SPECIFIC BACKGROUNDS WITH DARK OVERLAY & LOW OPACITY */
+        #page-menu {
+            background: linear-gradient(rgba(10, 7, 5, 0.88), rgba(10, 7, 5, 0.96)), 
+                        url('MENU.png') center/cover no-repeat fixed;
+        }
+
+        #page-history {
+            background: linear-gradient(rgba(10, 7, 5, 0.88), rgba(10, 7, 5, 0.96)), 
+                        url('Our History.jpg') center/cover no-repeat fixed;
+        }
+
         /* CONTENT CONTAINER */
         .container {
             max-width: 540px;
@@ -252,8 +263,30 @@
             letter-spacing: 1px;
             text-transform: uppercase;
             color: var(--text-muted);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             display: block;
+        }
+
+        /* Live Stock Counter Badge */
+        .stock-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--gold-light);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid var(--gold-primary);
+            padding: 6px 12px;
+            border-radius: 2px;
+            margin-bottom: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .stock-badge.sold-out {
+            background: rgba(217, 83, 79, 0.2);
+            border-color: var(--warn-red);
+            color: #ff9999;
         }
 
         .card-description {
@@ -430,6 +463,9 @@
                 <h2 class="card-title">Nasi Goreng</h2>
                 <span class="card-subtitle">Indonesian Caramelized Fried Rice</span>
                 
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="nasi-stock">📦 Available Samples: 50</div>
+
                 <p class="card-description">
                     Indonesia's ultimate comfort dish. It combines warm rice, savory ground beef, and sweet Kecap Manis with a touch of chili heat, topped off with crispy shallots for a wonderful crunch.
                 </p>
@@ -451,6 +487,9 @@
                 <h2 class="card-title">Wedang Jahe</h2>
                 <span class="card-subtitle">Traditional Javanese Spiced Ginger Brew</span>
                 
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="wedang-stock">📦 Available Samples: 50</div>
+
                 <p class="card-description">
                     A comforting homemade tea brewed by simmering fresh ginger root with natural Muscovado sugar. It delivers a soothing, cozy warmth with every single sip.
                 </p>
@@ -531,7 +570,7 @@
     <!-- Firebase SDK & Web App Interactive Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
         // Your Web App's Firebase Configuration
         const firebaseConfig = {
@@ -547,6 +586,39 @@
         // Initialize Firebase & Realtime Database
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // Realtime Stock Listener (Syncs counts with admin.html)
+        const stocksRef = ref(db, 'stocks');
+        onValue(stocksRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const nasiStock = data.nasi !== undefined ? data.nasi : 50;
+                const wedangStock = data.wedang !== undefined ? data.wedang : 50;
+
+                const nasiEl = document.getElementById('nasi-stock');
+                const wedangEl = document.getElementById('wedang-stock');
+
+                if (nasiEl) {
+                    if (nasiStock <= 0) {
+                        nasiEl.className = "stock-badge sold-out";
+                        nasiEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        nasiEl.className = "stock-badge";
+                        nasiEl.innerText = `📦 Available Samples: ${nasiStock}`;
+                    }
+                }
+
+                if (wedangEl) {
+                    if (wedangStock <= 0) {
+                        wedangEl.className = "stock-badge sold-out";
+                        wedangEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        wedangEl.className = "stock-badge";
+                        wedangEl.innerText = `📦 Available Samples: ${wedangStock}`;
+                    }
+                }
+            }
+        });
 
         // Screen Navigation Function
         window.navigateTo = function(pageId) {
