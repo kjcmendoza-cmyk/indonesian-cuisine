@@ -21,21 +21,38 @@
             padding: 24px; 
             margin-bottom: 24px; 
             border-radius: 8px; 
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .card h2 { margin: 0; font-size: 1.2rem; color: #e6c88b; }
         
         .count { 
-            font-size: 4rem; 
+            font-size: 3.8rem; 
             font-weight: bold; 
-            margin: 10px 0; 
+            margin: 5px 0; 
             color: #ffffff;
         }
+
+        /* Small Box for Samples Served */
+        .served-box {
+            display: inline-block;
+            background: rgba(197, 160, 89, 0.12);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            color: #e6c88b;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-bottom: 18px;
+            letter-spacing: 0.5px;
+        }
         
-        .btn-group { display: flex; gap: 15px; justify-content: center; }
+        .btn-group { display: flex; gap: 15px; justify-content: center; margin-bottom: 16px; }
         button { 
             flex: 1; 
-            padding: 20px; 
-            font-size: 2rem; 
+            padding: 16px; 
+            font-size: 1.8rem; 
             font-weight: bold;
             border: none; 
             border-radius: 8px; 
@@ -46,29 +63,81 @@
         
         .btn-minus { background: #d9534f; color: white; }
         .btn-plus { background: #4caf50; color: white; }
+
+        /* Direct Input Control Styling */
+        .set-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .set-group input {
+            background: #0a0705;
+            border: 1px solid rgba(197, 160, 89, 0.5);
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 130px;
+            text-align: center;
+            outline: none;
+        }
+
+        .set-group input:focus {
+            border-color: #c5a059;
+        }
+
+        .btn-set {
+            background: #c5a059;
+            color: #0a0705;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 12px 18px;
+            flex: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Indonesia Admin Panel</h1>
+    <h1>Admin Panel</h1>
 
     <!-- Nasi Goreng Control -->
     <div class="card">
         <h2>🍛 Nasi Goreng</h2>
-        <div class="count" id="nasi-count">50</div>
+        <div class="count" id="nasi-count">100</div>
+        
+        <!-- Samples Served Display Box -->
+        <div class="served-box" id="nasi-served">🍽️ Samples Served: 0 / 100</div>
+
         <div class="btn-group">
             <button class="btn-minus" onclick="updateStock('nasi', -1)">−</button>
             <button class="btn-plus" onclick="updateStock('nasi', 1)">+</button>
+        </div>
+        <div class="set-group">
+            <input type="number" id="nasi-input" placeholder="Enter stock" min="0">
+            <button class="btn-set" onclick="setExactStock('nasi')">Set Stock</button>
         </div>
     </div>
 
     <!-- Wedang Jahe Control -->
     <div class="card">
         <h2>🍵 Wedang Jahe</h2>
-        <div class="count" id="wedang-count">50</div>
+        <div class="count" id="wedang-count">100</div>
+
+        <!-- Samples Served Display Box -->
+        <div class="served-box" id="wedang-served">🍽️ Samples Served: 0 / 100</div>
+
         <div class="btn-group">
             <button class="btn-minus" onclick="updateStock('wedang', -1)">−</button>
             <button class="btn-plus" onclick="updateStock('wedang', 1)">+</button>
+        </div>
+        <div class="set-group">
+            <input type="number" id="wedang-input" placeholder="Enter stock" min="0">
+            <button class="btn-set" onclick="setExactStock('wedang')">Set Stock</button>
         </div>
     </div>
 
@@ -93,29 +162,48 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Track current stocks locally to do math
-        let currentStocks = { nasi: 50, wedang: 50 };
+        // Local tracking
+        let currentStocks = { nasi: 100, wedang: 100 };
 
-        // Listen for live updates from Firebase to display on screen
+        // Realtime Listener
         const stocksRef = ref(db, 'stocks');
         onValue(stocksRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 currentStocks = data;
-                document.getElementById('nasi-count').innerText = currentStocks.nasi !== undefined ? currentStocks.nasi : 50;
-                document.getElementById('wedang-count').innerText = currentStocks.wedang !== undefined ? currentStocks.wedang : 50;
+                
+                const nasiStock = currentStocks.nasi !== undefined ? currentStocks.nasi : 100;
+                const wedangStock = currentStocks.wedang !== undefined ? currentStocks.wedang : 100;
+
+                // Update Remaining Stock UI
+                document.getElementById('nasi-count').innerText = nasiStock;
+                document.getElementById('wedang-count').innerText = wedangStock;
+
+                // Calculate Served Samples (Clamped between 0 and 100)
+                const nasiServed = Math.max(0, Math.min(100, 100 - nasiStock));
+                const wedangServed = Math.max(0, Math.min(100, 100 - wedangStock));
+
+                // Update Served UI Boxes
+                document.getElementById('nasi-served').innerText = `🍽️ Samples Served: ${nasiServed} / 100`;
+                document.getElementById('wedang-served').innerText = `🍽️ Samples Served: ${wedangServed} / 100`;
             }
         });
 
-        // Attach function to window so HTML buttons can trigger it
+        // Increment / Decrement
         window.updateStock = function(item, change) {
-            let newCount = (currentStocks[item] !== undefined ? currentStocks[item] : 50) + change;
-            
-            // Prevent going below 0
+            let newCount = (currentStocks[item] !== undefined ? currentStocks[item] : 100) + change;
             if (newCount < 0) newCount = 0; 
-            
-            // Push new number to Firebase
             set(ref(db, 'stocks/' + item), newCount);
+        };
+
+        // Set Exact Custom Stock Value
+        window.setExactStock = function(item) {
+            const inputEl = document.getElementById(item + '-input');
+            const val = parseInt(inputEl.value, 10);
+            if (!isNaN(val) && val >= 0) {
+                set(ref(db, 'stocks/' + item), val);
+                inputEl.value = '';
+            }
         };
     </script>
 
