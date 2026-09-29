@@ -3,201 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booth 1 Admin | Stock Control</title>
+    <title>Admin Dashboard | Esteemed Royal Dining</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #0a0705;
+            --card-bg: #16110e;
+            --gold-primary: #c5a059;
+            --text-main: #f4efea;
+            --text-muted: #b5a89e;
+            --border-gold: rgba(197, 160, 89, 0.35);
+            --safe-green: #4caf50;
+            --warn-red: #d9534f;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        html, body { 
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: #0a0705; 
-            color: white; 
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 24px;
+        }
+
+        .header {
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .header h1 {
+            color: var(--gold-primary);
+            font-size: 1.8rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .admin-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 24px;
+        }
+
+        .admin-card h2 {
+            font-size: 1.2rem;
+            color: var(--gold-primary);
+            margin-bottom: 16px;
+        }
+
+        .stock-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .controls {
             display: flex;
-            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        button {
+            background: rgba(10, 7, 5, 0.8);
+            border: 1px solid var(--gold-primary);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--gold-primary);
+            color: var(--bg-dark);
+        }
+
+        button.btn-danger {
+            border-color: var(--warn-red);
+            color: var(--warn-red);
+        }
+
+        button.btn-danger:hover {
+            background: var(--warn-red);
+            color: white;
+        }
+
+        /* Custom Modal Dialog */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 16px 24px;
         }
 
-        h1 { 
-            color: #c5a059; 
-            font-size: 1.25rem; 
-            text-align: center;
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            margin-bottom: 14px;
-        }
-
-        /* Side-by-Side Landscape Grid */
-        .cards-wrapper {
+        .modal-overlay.active {
             display: flex;
-            flex-direction: row;
-            gap: 20px;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--gold-primary);
+            border-radius: 8px;
+            padding: 28px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-card h3 {
+            color: var(--gold-primary);
+            font-size: 1.25rem;
+            margin-bottom: 6px;
+        }
+
+        .modal-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-card input[type="number"] {
             width: 100%;
-            max-width: 960px;
-            height: calc(100vh - 80px);
-            max-height: 420px;
-            justify-content: center;
-            align-items: stretch;
+            padding: 12px;
+            background: rgba(10, 7, 5, 0.9);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        
-        .card { 
-            flex: 1;
-            background: #16110e; 
-            border: 1px solid rgba(197, 160, 89, 0.35); 
-            padding: 18px; 
-            border-radius: 12px; 
+
+        .modal-card input[type="number"]:focus {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
+        }
+
+        .modal-actions {
             display: flex;
-            flex-direction: column;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            background: var(--gold-primary);
+            color: var(--bg-dark);
+            border: 1px solid var(--gold-primary);
+        }
+
+        .btn-primary:hover {
+            background: #d4b26f;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Reactions Section */
+        .reactions-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 6px;
+            padding: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .reaction-item {
+            padding: 12px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            text-align: center;
         }
 
-        .card h2 { 
-            margin: 0; 
-            font-size: 1.1rem; 
-            color: #e6c88b; 
-        }
-        
-        .count { 
-            font-size: 3.2rem; 
-            font-weight: bold; 
-            line-height: 1;
-            margin: 4px 0;
-            color: #ffffff;
-        }
-
-        /* Small Box for Samples Served */
-        .served-box {
-            display: inline-block;
-            background: rgba(197, 160, 89, 0.12);
-            border: 1px solid rgba(197, 160, 89, 0.4);
-            color: #e6c88b;
-            font-size: 0.8rem;
+        .reaction-text {
             font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-            width: 100%;
-            max-width: 260px;
-        }
-        
-        .btn-group { 
-            display: flex; 
-            gap: 12px; 
-            width: 100%;
-            justify-content: center; 
+            color: var(--gold-primary);
         }
 
-        button { 
-            flex: 1; 
-            padding: 14px; 
-            font-size: 1.8rem; 
-            font-weight: bold;
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            transition: opacity 0.2s;
+        .reaction-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
-        button:active { opacity: 0.7; }
-        
-        .btn-minus { background: #d9534f; color: white; }
-        .btn-plus { background: #4caf50; color: white; }
-
-        /* Direct Input Control Styling */
-        .set-group {
+        .flex-between {
             display: flex;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-        }
-
-        .set-group input {
-            background: #0a0705;
-            border: 1px solid rgba(197, 160, 89, 0.5);
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            flex: 1;
-            text-align: center;
-            outline: none;
-        }
-
-        .set-group input:focus {
-            border-color: #c5a059;
-        }
-
-        .btn-set {
-            background: #c5a059;
-            color: #0a0705;
-            font-size: 0.78rem;
-            font-weight: 700;
-            padding: 10px 14px;
-            flex: none;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 6px;
+            margin-bottom: 16px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Admin Panel</h1>
+    <div class="header">
+        <h1>Dashboard Control Panel</h1>
+        <p style="color: var(--text-muted);">Manage inventory and view live audience feedback.</p>
+    </div>
 
-    <div class="cards-wrapper">
-        <!-- Nasi Goreng Control -->
-        <div class="card">
-            <h2>🍛 Nasi Goreng</h2>
-            <div class="count" id="nasi-count">100</div>
-            
-            <div class="served-box" id="nasi-served">🍽️ Samples Served: 0 / 100</div>
-
-            <div class="btn-group">
-                <button class="btn-minus" onclick="updateStock('nasi', -1)">−</button>
-                <button class="btn-plus" onclick="updateStock('nasi', 1)">+</button>
-            </div>
-            
-            <div class="set-group">
-                <input type="number" id="nasi-input" placeholder="Enter stock" min="0">
-                <button class="btn-set" onclick="setExactStock('nasi')">Set Stock</button>
+    <!-- Stock Controls -->
+    <div class="dashboard-grid">
+        <!-- Nasi Goreng -->
+        <div class="admin-card">
+            <h2>Nasi Goreng Stock</h2>
+            <div class="stock-value" id="admin-nasi-val">--</div>
+            <div class="controls">
+                <button onclick="updateStock('nasi', -1)">- 1</button>
+                <button onclick="updateStock('nasi', 1)">+ 1</button>
+                <button onclick="setCustomStock('nasi')">Set Value</button>
             </div>
         </div>
 
-        <!-- Wedang Jahe Control -->
-        <div class="card">
-            <h2>🍵 Wedang Jahe</h2>
-            <div class="count" id="wedang-count">100</div>
-
-            <div class="served-box" id="wedang-served">🍽️ Samples Served: 0 / 100</div>
-
-            <div class="btn-group">
-                <button class="btn-minus" onclick="updateStock('wedang', -1)">−</button>
-                <button class="btn-plus" onclick="updateStock('wedang', 1)">+</button>
+        <!-- Wedang Jahe -->
+        <div class="admin-card">
+            <h2>Wedang Jahe Stock</h2>
+            <div class="stock-value" id="admin-wedang-val">--</div>
+            <div class="controls">
+                <button onclick="updateStock('wedang', -1)">- 1</button>
+                <button onclick="updateStock('wedang', 1)">+ 1</button>
+                <button onclick="setCustomStock('wedang')">Set Value</button>
             </div>
+        </div>
 
-            <div class="set-group">
-                <input type="number" id="wedang-input" placeholder="Enter stock" min="0">
-                <button class="btn-set" onclick="setExactStock('wedang')">Set Stock</button>
+        <!-- Krupuk -->
+        <div class="admin-card">
+            <h2>Krupuk Stock</h2>
+            <div class="stock-value" id="admin-krupuk-val">--</div>
+            <div class="controls">
+                <button onclick="updateStock('krupuk', -1)">- 1</button>
+                <button onclick="updateStock('krupuk', 1)">+ 1</button>
+                <button onclick="setCustomStock('krupuk')">Set Value</button>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK & Live Sync Script -->
+    <!-- Live Reactions -->
+    <div class="reactions-container">
+        <div class="flex-between">
+            <h2>Live Audience Reactions</h2>
+            <button class="btn-danger" onclick="clearReactions()">Clear Logs</button>
+        </div>
+        <div id="reactions-list">
+            <p style="color: var(--text-muted);">Waiting for reactions...</p>
+        </div>
+    </div>
+
+    <!-- Styled Stock Input Modal -->
+    <div class="modal-overlay" id="stock-modal">
+        <div class="modal-card">
+            <h3 id="modal-title">Set Stock Value</h3>
+            <p id="modal-desc">Enter the new total quantity for this item.</p>
+            <input type="number" id="modal-stock-input" min="0" placeholder="0">
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" onclick="confirmCustomStock()">Update Stock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Setup -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // Your Web App's Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAdUDRkUqEamY_lscdAeSNlhBZWs-EgNvU",
             authDomain: "basil--n-bowl-kiosk-system.firebaseapp.com",
@@ -209,54 +315,137 @@
             measurementId: "G-45ZJB5EE0W"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Local tracking
-        let currentStocks = { nasi: 100, wedang: 100 };
+        // State tracking for modal input
+        let activeItemKey = null;
 
-        // Realtime Listener
+        const itemDisplayNames = {
+            nasi: 'Nasi Goreng',
+            wedang: 'Wedang Jahe',
+            krupuk: 'Krupuk'
+        };
+
+        // --- INVENTORY MANAGEMENT ---
         const stocksRef = ref(db, 'stocks');
+        
         onValue(stocksRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                currentStocks = data;
-                
-                const nasiStock = currentStocks.nasi !== undefined ? currentStocks.nasi : 100;
-                const wedangStock = currentStocks.wedang !== undefined ? currentStocks.wedang : 100;
+            const data = snapshot.val() || { nasi: 50, wedang: 50, krupuk: 50 };
+            
+            document.getElementById('admin-nasi-val').innerText = data.nasi !== undefined ? data.nasi : 50;
+            document.getElementById('admin-wedang-val').innerText = data.wedang !== undefined ? data.wedang : 50;
+            document.getElementById('admin-krupuk-val').innerText = data.krupuk !== undefined ? data.krupuk : 50;
+            
+            // Expose current data globally for the update buttons
+            window.currentStocks = data;
+        });
 
-                // Update Remaining Stock UI
-                document.getElementById('nasi-count').innerText = nasiStock;
-                document.getElementById('wedang-count').innerText = wedangStock;
+        window.updateStock = async function(item, amount) {
+            const currentVal = window.currentStocks && window.currentStocks[item] !== undefined 
+                ? window.currentStocks[item] 
+                : 50;
+            let newVal = currentVal + amount;
+            if (newVal < 0) newVal = 0; // Prevent negative stock
+            
+            await set(ref(db, 'stocks/' + item), newVal);
+        };
 
-                // Calculate Served Samples (Clamped between 0 and 100)
-                const nasiServed = Math.max(0, Math.min(100, 100 - nasiStock));
-                const wedangServed = Math.max(0, Math.min(100, 100 - wedangStock));
+        // Modal Functions
+        window.setCustomStock = function(item) {
+            activeItemKey = item;
+            const currentVal = window.currentStocks && window.currentStocks[item] !== undefined 
+                ? window.currentStocks[item] 
+                : 0;
 
-                // Update Served UI Boxes
-                document.getElementById('nasi-served').innerText = `🍽️ Samples Served: ${nasiServed} / 100`;
-                document.getElementById('wedang-served').innerText = `🍽️ Samples Served: ${wedangServed} / 100`;
+            const name = itemDisplayNames[item] || item;
+            document.getElementById('modal-title').innerText = `Set ${name} Stock`;
+            document.getElementById('modal-desc').innerText = `Enter the new stock value for ${name}.`;
+            
+            const inputEl = document.getElementById('modal-stock-input');
+            inputEl.value = currentVal;
+
+            const modal = document.getElementById('stock-modal');
+            modal.classList.add('active');
+            
+            setTimeout(() => {
+                inputEl.focus();
+                inputEl.select();
+            }, 50);
+        };
+
+        window.closeModal = function() {
+            document.getElementById('stock-modal').classList.remove('active');
+            activeItemKey = null;
+        };
+
+        window.confirmCustomStock = async function() {
+            if (!activeItemKey) return;
+
+            const inputEl = document.getElementById('modal-stock-input');
+            const inputVal = inputEl.value.trim();
+
+            if (inputVal !== "" && !isNaN(inputVal)) {
+                const newVal = parseInt(inputVal, 10);
+                if (newVal >= 0) {
+                    await set(ref(db, 'stocks/' + activeItemKey), newVal);
+                }
+            }
+            window.closeModal();
+        };
+
+        // Listen for 'Enter' key inside modal input
+        document.getElementById('modal-stock-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                window.confirmCustomStock();
+            } else if (e.key === 'Escape') {
+                window.closeModal();
             }
         });
 
-        // Increment / Decrement
-        window.updateStock = function(item, change) {
-            let newCount = (currentStocks[item] !== undefined ? currentStocks[item] : 100) + change;
-            if (newCount < 0) newCount = 0; 
-            set(ref(db, 'stocks/' + item), newCount);
-        };
+        // Close modal when clicking outside modal box
+        document.getElementById('stock-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'stock-modal') {
+                window.closeModal();
+            }
+        });
 
-        // Set Exact Custom Stock Value
-        window.setExactStock = function(item) {
-            const inputEl = document.getElementById(item + '-input');
-            const val = parseInt(inputEl.value, 10);
-            if (!isNaN(val) && val >= 0) {
-                set(ref(db, 'stocks/' + item), val);
-                inputEl.value = '';
+        // --- REACTIONS LOG MANAGEMENT ---
+        const reactionsRef = ref(db, 'booth_reactions');
+        
+        onValue(reactionsRef, (snapshot) => {
+            const data = snapshot.val();
+            const listEl = document.getElementById('reactions-list');
+            
+            if (!data) {
+                listEl.innerHTML = '<p style="color: var(--text-muted);">No reactions recorded yet.</p>';
+                return;
+            }
+
+            listEl.innerHTML = '';
+            
+            // Convert object to array and sort by newest first
+            const reactionsArr = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            reactionsArr.forEach(item => {
+                const dateObj = new Date(item.timestamp);
+                const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+                
+                const div = document.createElement('div');
+                div.className = 'reaction-item';
+                div.innerHTML = `
+                    <span class="reaction-text">"${item.reaction}"</span>
+                    <span class="reaction-time">${timeString}</span>
+                `;
+                listEl.appendChild(div);
+            });
+        });
+
+        window.clearReactions = async function() {
+            if(confirm("Are you sure you want to delete all reaction logs?")) {
+                await remove(ref(db, 'booth_reactions'));
             }
         };
     </script>
-
 </body>
 </html>

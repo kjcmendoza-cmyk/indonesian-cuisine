@@ -503,6 +503,30 @@
                 </div>
             </article>
 
+            <!-- Item 3: Krupuk -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="krupuk.jpg" alt="Krupuk">
+                </div>
+                <h2 class="card-title">Krupuk</h2>
+                <span class="card-subtitle">Traditional Indonesian Crispy Crackers</span>
+                
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="krupuk-stock">📦 Available Samples: 50</div>
+
+                <p class="card-description">
+                    A classic, airy Indonesian cracker deep-fried to crisp perfection. Delivering a light, savory crunch, it is the essential side snack enjoyed across the Indonesian archipelago.
+                </p>
+
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Wheat Flour, Starch, Iodized Salt, Sugar, Monosodium Glutamate (MSG), Baking Powder, Onion Powder, Garlic Powder.
+                </div>
+
+                <div class="allergen-badge warn">
+                    ⚠️ ALLERGEN NOTICE: Contains Wheat (Gluten)
+                </div>
+            </article>
+
             <!-- Interactive Taste Review -->
             <div class="reaction-bar">
                 <p class="reaction-title">Share Your Culinary Experience</p>
@@ -551,6 +575,13 @@
                         In Java, Wedang means warm drink and Jahe means ginger. Originally served in the royal courts of Central Java, host families prepared this herbal drink to welcome honored guests with warmth, health, and vitality.
                     </div>
                 </div>
+
+                <div class="history-card">
+                    <div class="history-year">Krupuk: The Crunch of Indonesian Dining</div>
+                    <div class="history-text">
+                        A beloved staple at almost every Indonesian meal, Krupuk provides the iconic crispy crunch that balances rich sambals and savory dishes across the archipelago.
+                    </div>
+                </div>
             </article>
 
             <article class="card" style="text-align: center;">
@@ -595,9 +626,11 @@
             if (data) {
                 const nasiStock = data.nasi !== undefined ? data.nasi : 50;
                 const wedangStock = data.wedang !== undefined ? data.wedang : 50;
+                const krupukStock = data.krupuk !== undefined ? data.krupuk : 50;
 
                 const nasiEl = document.getElementById('nasi-stock');
                 const wedangEl = document.getElementById('wedang-stock');
+                const krupukEl = document.getElementById('krupuk-stock');
 
                 if (nasiEl) {
                     if (nasiStock <= 0) {
@@ -616,6 +649,16 @@
                     } else {
                         wedangEl.className = "stock-badge";
                         wedangEl.innerText = `📦 Available Samples: ${wedangStock}`;
+                    }
+                }
+
+                if (krupukEl) {
+                    if (krupukStock <= 0) {
+                        krupukEl.className = "stock-badge sold-out";
+                        krupukEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        krupukEl.className = "stock-badge";
+                        krupukEl.innerText = `📦 Available Samples: ${krupukStock}`;
                     }
                 }
             }
