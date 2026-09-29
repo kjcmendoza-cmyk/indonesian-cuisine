@@ -1,1491 +1,740 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>FUSEE Digital Logbook</title>
-  
-  <!-- Google Font: Plus Jakarta Sans -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Mobile & PWA Settings -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="apple-touch-icon" href="fusee-logo.png">
-
-  <!-- Firebase Web SDKs (Compat version for direct browser script inclusion) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-  <!-- Custom Theme & Design System -->
-  <style>
-    :root {
-      --bg-main: #f4f7fb;
-      --card-bg: rgba(230, 237, 253, 0.88); /* Matched to FUSEE logo background #e6edfd */
-      --card-border: rgba(255, 255, 255, 0.7);
-      
-      --text-primary: #1e293b;
-      --text-secondary: #64748b;
-      --text-muted: #94a3b8;
-
-      --brand-purple: #6366f1;
-      --brand-purple-dark: #4f46e5;
-      --brand-pink: #ec4899;
-      --brand-amber: #f59e0b;
-      --brand-cyan: #0284c7;
-      
-      --status-in: #10b981;
-      --status-in-glow: rgba(16, 185, 129, 0.4);
-      
-      --status-out: #ef4444;
-      --status-out-glow: rgba(239, 68, 68, 0.4);
-
-      --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      --radius-lg: 28px;
-      --radius-md: 16px;
-      --radius-sm: 10px;
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      width: 100%;
-      height: 100%;
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family: var(--font-family);
-      background-color: var(--bg-main);
-      color: var(--text-primary);
-      min-height: 100vh;
-      min-height: 100dvh;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Ambient Background Accents */
-    .bg-glow {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      z-index: -1;
-      opacity: 0.5;
-      pointer-events: none;
-      animation: float 10s infinite alternate ease-in-out;
-    }
-
-    .blob-1 {
-      width: 280px;
-      height: 280px;
-      background: #c7d2fe;
-      top: -50px;
-      left: -50px;
-    }
-
-    .blob-2 {
-      width: 260px;
-      height: 260px;
-      background: #fbcfe8;
-      bottom: -50px;
-      right: -50px;
-      animation-delay: -5s;
-    }
-
-    @keyframes float {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(20px, 20px); }
-    }
-
-    /* Main Inner Card - Glassmorphism matched to logo color */
-    .app-card {
-      width: 100%;
-      max-width: 420px;
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 28px 24px;
-      box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08);
-      margin: auto;
-    }
-
-    /* View Transitions */
-    .view-container {
-      animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Header & Branding */
-    .app-header {
-      text-align: center;
-      margin-bottom: 24px;
-    }
-
-    .logo-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .fusee-logo {
-      max-width: 210px;
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
-    }
-
-    .brand-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: var(--brand-purple);
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      padding: 5px 14px;
-      border-radius: 30px;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
-
-    .app-header h1 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: var(--text-primary);
-    }
-
-    .subtitle {
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      line-height: 1.4;
-    }
-
-    /* Form Elements */
-    .welcome-banner {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .welcome-banner h2 {
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .welcome-banner p {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      background: #ffffff;
-      border: 2px solid rgba(148, 163, 184, 0.2);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-      outline: none;
-      transition: all 0.2s ease;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      border-color: var(--brand-purple);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .form-group input::placeholder {
-      color: #cbd5e1;
-    }
-
-    /* Input Error Styling */
-    .form-group input.input-error,
-    .form-group select.input-error {
-      border-color: #ef4444 !important;
-      background-color: #fef2f2;
-    }
-
-    .error-msg {
-      font-size: 0.75rem;
-      color: #ef4444;
-      font-weight: 600;
-      margin-top: 6px;
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-3px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .auth-toggle-text {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-    }
-
-    .auth-toggle-text button,
-    .forgot-pass-link {
-      background: none;
-      border: none;
-      color: var(--brand-purple);
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      transition: color 0.2s;
-    }
-
-    .auth-toggle-text button:hover,
-    .forgot-pass-link:hover {
-      color: var(--brand-pink);
-    }
-
-    .form-extra-link {
-      text-align: right;
-      margin-top: -8px;
-      margin-bottom: 16px;
-    }
-
-    .forgot-pass-link {
-      font-size: 0.78rem;
-    }
-
-    /* Lab Operating Status Banner */
-    .lab-status-banner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 0.78rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .lab-status-open {
-      background: rgba(16, 185, 129, 0.12);
-      color: #047857;
-      border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-
-    .lab-status-closed {
-      background: rgba(239, 68, 68, 0.12);
-      color: #b91c1c;
-      border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-
-    .lab-status-locked {
-      background: rgba(245, 158, 11, 0.12);
-      color: #b45309;
-      border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-
-    /* Dashboard Profile Section */
-    .user-profile-card {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #ffffff;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      padding: 14px 16px;
-      border-radius: var(--radius-md);
-      margin-bottom: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s ease;
-    }
-
-    .user-profile-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .user-profile-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .avatar-ring {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--brand-purple), var(--brand-pink));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1rem;
-      color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .user-details {
-      min-width: 0;
-    }
-
-    .user-details h2 {
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .badge-year {
-      font-size: 0.75rem;
-      color: var(--brand-purple);
-      font-weight: 600;
-      display: block;
-    }
-
-    .profile-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: flex-end;
-    }
-
-    .btn-edit {
-      background: rgba(99, 102, 241, 0.1);
-      color: var(--brand-purple);
-      border: 1px solid rgba(99, 102, 241, 0.2);
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-family: inherit;
-      font-size: 0.72rem;
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-
-    .btn-edit:hover {
-      background: rgba(99, 102, 241, 0.2);
-      transform: scale(1.03);
-    }
-
-    .btn-logout {
-      background: #fef2f2;
-      color: #ef4444;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-family: inherit;
-      font-size: 0.72rem;
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-
-    .btn-logout:hover {
-      background: #fee2e2;
-      transform: scale(1.05);
-    }
-
-    /* Status Card Section */
-    .status-card {
-      text-align: center;
-      background: #ffffff;
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      border-radius: var(--radius-md);
-      padding: 24px 16px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-    }
-
-    .status-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 1.2px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 20px;
-      border-radius: 30px;
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-    }
-
-    .status-pill.status-in {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      color: #047857;
-    }
-
-    .status-pill.status-in .status-dot {
-      background-color: var(--status-in);
-      box-shadow: 0 0 12px var(--status-in);
-      animation: pulse 2s infinite;
-    }
-
-    .status-pill.status-out {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      color: var(--text-secondary);
-    }
-
-    .status-pill.status-out .status-dot {
-      background-color: var(--text-muted);
-    }
-
-    .status-subtext {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-
-    /* Buttons */
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: var(--radius-md);
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--brand-purple), var(--brand-pink));
-      color: #fff;
-      box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.8);
-    }
-
-    .btn-primary:hover {
-      box-shadow: 0 15px 25px -10px rgba(99, 102, 241, 0.9);
-    }
-
-    .btn-secondary {
-      background: #e2e8f0;
-      color: var(--text-primary);
-      margin-top: 10px;
-    }
-
-    .btn-secondary:hover {
-      background: #cbd5e1;
-    }
-
-    .btn-checkin {
-      background: var(--status-in);
-      color: #ffffff;
-      box-shadow: 0 10px 25px -5px var(--status-in-glow);
-    }
-
-    .btn-checkout {
-      background: var(--status-out);
-      color: #ffffff;
-      box-shadow: 0 10px 25px -5px var(--status-out-glow);
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
-
-    /* Custom Alert Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(4px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      padding: 16px;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-box {
-      background: #ffffff;
-      border-radius: var(--radius-md);
-      padding: 20px;
-      width: 100%;
-      max-width: 320px;
-      text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .modal-overlay.active .modal-box {
-      transform: translateY(0) scale(1);
-    }
-
-    .modal-title {
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .modal-message {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-      line-height: 1.5;
-      white-space: pre-line;
-    }
-
-    .modal-btn {
-      background: var(--brand-purple);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-family: inherit;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.2s;
-    }
-
-    .modal-btn:hover {
-      background: #4f46e5;
-    }
-
-    /* Small Mobile Screen Optimizations */
-    @media (max-width: 380px) {
-      body {
-        padding: 10px;
-      }
-
-      .app-card {
-        padding: 20px 16px;
-        border-radius: 22px;
-      }
-
-      .app-header h1 {
-        font-size: 1.4rem;
-      }
-
-      .fusee-logo {
-        max-width: 160px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang | Esteemed Royal Dining</title>
+    <!-- Google Fonts for Royal Serif Aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0705;
+            --card-bg: rgba(22, 17, 14, 0.9);
+            --gold-primary: #c5a059;
+            --gold-light: #e6c88b;
+            --gold-glow: rgba(197, 160, 89, 0.35);
+            --text-main: #f4efea;
+            --text-muted: #b5a89e;
+            --border-gold: rgba(197, 160, 89, 0.35);
+            --warn-red: #d9534f;
+            --safe-green: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Full Screen View System */
+        .page-view {
+            display: none;
+            min-height: 100vh;
+            width: 100%;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Fixed Header Navigation for Mobile Compatibility */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: rgba(10, 7, 5, 0.95);
+            border-bottom: 1px solid var(--border-gold);
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-back {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-light);
+            padding: 8px 12px;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:active {
+            background: var(--gold-primary);
+            color: #0a0705;
+        }
+
+        .brand-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            letter-spacing: 1.5px;
+            color: var(--gold-primary);
+            text-transform: uppercase;
+            font-weight: 700;
+            white-space: nowrap;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* HERO / HOME PAGE */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 24px;
+            background: linear-gradient(180deg, rgba(10, 7, 5, 0.6) 0%, rgba(10, 7, 5, 0.98) 100%), 
+                        url('https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+        }
+
+        .hero-subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 12px;
+        }
+
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .hero-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 420px;
+            margin-bottom: 36px;
+            font-weight: 300;
+        }
+
+        /* Hero Dual Action Buttons */
+        .cta-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn-royal {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 0.85rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--gold-light);
+            background: rgba(10, 7, 5, 0.7);
+            border: 1px solid var(--gold-primary);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .btn-royal:active {
+            background: var(--gold-primary);
+            color: #0a0705;
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        /* PAGE SPECIFIC BACKGROUNDS WITH DARK OVERLAY & LOW OPACITY */
+        #page-menu {
+            background: linear-gradient(rgba(10, 7, 5, 0.88), rgba(10, 7, 5, 0.96)), 
+                        url('MENU.png') center/cover no-repeat fixed;
+        }
+
+        #page-history {
+            background: linear-gradient(rgba(10, 7, 5, 0.88), rgba(10, 7, 5, 0.96)), 
+                        url('Our History.jpg') center/cover no-repeat fixed;
+        }
+
+        /* CONTENT CONTAINER */
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        .page-header-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .page-header-sub {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        /* ROYAL CARD STYLE */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+            overflow: hidden;
+        }
+
+        /* Dish Banner Image Container */
+        .card-img-container {
+            width: 100%;
+            height: auto;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 18px;
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            background: #0a0705;
+        }
+
+        .card-img-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-img-container img {
+            transform: scale(1.02);
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            color: var(--gold-light);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Live Stock Counter Badge */
+        .stock-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--gold-light);
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid var(--gold-primary);
+            padding: 6px 12px;
+            border-radius: 2px;
+            margin-bottom: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .stock-badge.sold-out {
+            background: rgba(217, 83, 79, 0.2);
+            border-color: var(--warn-red);
+            color: #ff9999;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 18px;
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        .ingredients-box {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding-top: 14px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            margin-bottom: 16px;
+        }
+
+        .ingredients-box strong {
+            color: var(--gold-primary);
+        }
+
+        /* Allergen Badges */
+        .allergen-badge {
+            display: inline-block;
+            font-size: 0.78rem;
+            padding: 8px 12px;
+            border-radius: 2px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .allergen-badge.warn {
+            background: rgba(217, 83, 79, 0.15);
+            border: 1px solid var(--warn-red);
+            color: #ff9999;
+        }
+
+        .allergen-badge.safe {
+            background: rgba(76, 175, 80, 0.15);
+            border: 1px solid var(--safe-green);
+            color: #a3e2a5;
+        }
+
+        /* History Timeline Card */
+        .history-card {
+            border-left: 2px solid var(--gold-primary);
+            padding-left: 18px;
+            margin-bottom: 24px;
+        }
+
+        .history-year {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            color: var(--gold-primary);
+            font-weight: 700;
+        }
+
+        .history-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        /* Reaction Bar */
+        .reaction-bar {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(197, 160, 89, 0.2);
+        }
+
+        .reaction-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-react {
+            flex: 1;
+            background: rgba(10, 7, 5, 0.6);
+            border: 1px solid var(--border-gold);
+            color: var(--gold-primary);
+            padding: 12px 6px;
+            border-radius: 2px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-react:hover, .btn-react:active {
+            border-color: var(--gold-light);
+            background: rgba(197, 160, 89, 0.18);
+            color: #ffffff;
+            box-shadow: 0 0 12px var(--gold-glow);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid var(--border-gold);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+
+        footer strong {
+            color: var(--gold-primary);
+        }
+
+        /* Canvas Overlay for Particle Confetti */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Ambient Lights -->
-  <div class="bg-glow blob-1"></div>
-  <div class="bg-glow blob-2"></div>
+    <canvas id="confetti-canvas"></canvas>
 
-  <!-- Custom Alert Modal -->
-  <div id="custom-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-box">
-      <h3 id="modal-title" class="modal-title">System Message</h3>
-      <p id="modal-msg" class="modal-message">Notification details here.</p>
-      <button id="modal-close" class="modal-btn">OK</button>
-    </div>
-  </div>
-
-  <main class="app-card">
-    <header class="app-header">
-      <div class="logo-container">
-        <img src="fusee-logo.png" alt="FUSEE Logo" class="fusee-logo">
-      </div>
-      
-      <div class="brand-badge">⚡ EE Computer Laboratory Portal</div>
-      <h1>Digital Logbook</h1>
-      <p class="subtitle">Federation of United Students of Electrical Engineering</p>
-    </header>
-
-    <!-- VIEW 1: SIGN UP -->
-    <section id="signup-view" class="view-container">
-      <div class="welcome-banner" style="text-align: left;">
-        <h2>Create Account</h2>
-      </div>
-
-      <form id="signup-form" novalidate>
-        <div class="form-group">
-          <label for="reg-name">Full Name</label>
-          <input type="text" id="reg-name" placeholder="e.g., Kyle Joseph C. Mendoza" autocomplete="name" required>
-          <span id="name-error" class="error-msg">Please enter your full name.</span>
+    <!-- PAGE 1: HOME LANDING SCREEN -->
+    <section id="page-home" class="page-view active">
+        <div class="hero">
+            <span class="hero-subtitle">International Food and Culture Festival 2026</span>
+            <h1 class="hero-title">Selamat Datang</h1>
+            <p class="hero-desc">Enjoy the rich flavors and authentic recipes of Indonesia, lovingly prepared for you today at Arrupe Hall.</p>
+            
+            <div class="cta-container">
+                <button class="btn-royal" onclick="navigateTo('menu')">MENU</button>
+                <button class="btn-royal" onclick="navigateTo('history')">OUR HISTORY</button>
+            </div>
         </div>
-
-        <div class="form-group">
-          <label for="reg-email">Student AdDU Email</label>
-          <input type="email" id="reg-email" placeholder="e.g., kjcmendoza@addu.edu.ph" autocomplete="email" required>
-          <span id="email-error" class="error-msg">Please enter a valid email ending in @addu.edu.ph</span>
-        </div>
-
-        <div class="form-group">
-          <label for="reg-year">Year Level</label>
-          <select id="reg-year" required>
-            <option value="" disabled selected>Select Year Level</option>
-            <option value="1st Year">1st Year</option>
-            <option value="2nd Year">2nd Year</option>
-            <option value="3rd Year">3rd Year</option>
-            <option value="4th Year">4th Year</option>
-            <option value="5th Year">5th Year</option>
-          </select>
-          <span id="year-error" class="error-msg">Please select your year level.</span>
-        </div>
-
-        <div class="form-group">
-          <label for="reg-password">Account Password</label>
-          <input type="password" id="reg-password" placeholder="Minimum 6 characters" autocomplete="new-password" required minlength="6">
-          <span id="password-error" class="error-msg">Password must be at least 6 characters.</span>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Sign Up</button>
-      </form>
-
-      <p class="auth-toggle-text">
-        Already have an account? <button type="button" id="go-to-login">Log In</button>
-      </p>
     </section>
 
-    <!-- VIEW 2: LOG IN -->
-    <section id="login-view" class="view-container" style="display: none;">
-      <div class="welcome-banner" style="text-align: left;">
-        <h2>Welcome Back</h2>
-      </div>
+    <!-- PAGE 2: MENU PAGE -->
+    <section id="page-menu" class="page-view">
+        <header class="top-nav">
+            <button class="btn-back" onclick="navigateTo('home')">← HOME</button>
+            <div class="brand-logo">Selamat Datang</div>
+        </header>
 
-      <form id="login-form" novalidate>
-        <div class="form-group">
-          <label for="login-email">Student AdDU Email</label>
-          <input type="email" id="login-email" placeholder="e.g., kjcmendoza@addu.edu.ph" autocomplete="email" required>
-          <span id="login-email-error" class="error-msg">Please enter a valid email ending in @addu.edu.ph</span>
-        </div>
+        <main class="container">
+            <h1 class="page-header-title">Our Menu Offerings</h1>
+            <p class="page-header-sub">Bite-Sized Tasting Samples</p>
 
-        <div class="form-group">
-          <label for="login-password">Account Password</label>
-          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" required minlength="6">
-          <span id="login-password-error" class="error-msg">Password must be at least 6 characters.</span>
-        </div>
+            <!-- Item 1: Nasi Goreng -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="d37bf17c96e03b533f0f4b1c9b130011.jpg" alt="Nasi Goreng">
+                </div>
+                <h2 class="card-title">Nasi Goreng</h2>
+                <span class="card-subtitle">Indonesian Caramelized Fried Rice</span>
+                
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="nasi-stock">📦 Available Samples: 50</div>
 
-        <div class="form-extra-link">
-          <button type="button" id="go-to-reset" class="forgot-pass-link">Forgot Password?</button>
-        </div>
+                <p class="card-description">
+                    Indonesia's ultimate comfort dish. It combines warm rice, savory ground beef, and sweet Kecap Manis with a touch of chili heat, topped off with crispy shallots for a wonderful crunch.
+                </p>
 
-        <button type="submit" class="btn btn-primary">Log In</button>
-      </form>
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Rice, Ground Beef, Kecap Manis, Sambal Oelek, Garlic, Onion, Scallions, Crispy Shallots, Shrimp Paste.
+                </div>
 
-      <p class="auth-toggle-text">
-        Don't have an account? <button type="button" id="go-to-signup">Sign Up</button>
-      </p>
+                <div class="allergen-badge warn">
+                    ⚠️ ALLERGEN NOTICE: Contains Shellfish/Crustaceans (Shrimp Paste) and Soy
+                </div>
+            </article>
+
+            <!-- Item 2: Wedang Jahe -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="b290f49da25c8870856ba0e79897f617.jpg" alt="Wedang Jahe">
+                </div>
+                <h2 class="card-title">Wedang Jahe</h2>
+                <span class="card-subtitle">Traditional Javanese Spiced Ginger Brew</span>
+                
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="wedang-stock">📦 Available Samples: 50</div>
+
+                <p class="card-description">
+                    A comforting homemade tea brewed by simmering fresh ginger root with natural Muscovado sugar. It delivers a soothing, cozy warmth with every single sip.
+                </p>
+
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Fresh Ginger Root, Muscovado Sugar, Purified Water.
+                </div>
+
+                <div class="allergen-badge safe">
+                    ✅ ALLERGEN-FREE: Safe for everyone (100% Vegan)
+                </div>
+            </article>
+
+            <!-- Item 3: Krupuk -->
+            <article class="card">
+                <div class="card-img-container">
+                    <img src="krupuk.jpg" alt="Krupuk">
+                </div>
+                <h2 class="card-title">Krupuk</h2>
+                <span class="card-subtitle">Traditional Indonesian Crispy Crackers</span>
+                
+                <!-- Live Stock Counter Badge -->
+                <div class="stock-badge" id="krupuk-stock">📦 Available Samples: 50</div>
+
+                <p class="card-description">
+                    A classic, airy Indonesian cracker deep-fried to crisp perfection. Delivering a light, savory crunch, it is the essential side snack enjoyed across the Indonesian archipelago.
+                </p>
+
+                <div class="ingredients-box">
+                    <strong>Ingredients:</strong> Wheat Flour, Starch, Iodized Salt, Sugar, Monosodium Glutamate (MSG), Baking Powder, Onion Powder, Garlic Powder.
+                </div>
+
+                <div class="allergen-badge warn">
+                    ⚠️ ALLERGEN NOTICE: Contains Wheat (Gluten)
+                </div>
+            </article>
+
+            <!-- Interactive Taste Review -->
+            <div class="reaction-bar">
+                <p class="reaction-title">Share Your Culinary Experience</p>
+                <div class="btn-group">
+                    <button class="btn-react" onclick="triggerReaction('Exquisite Flavor')">Exquisite Flavor</button>
+                    <button class="btn-react" onclick="triggerReaction('Authentic Spice')">Authentic Spice</button>
+                    <button class="btn-react" onclick="triggerReaction('Warm & Soothing')">Warm & Soothing</button>
+                </div>
+            </div>
+
+            <footer>
+                <p><strong>International Food and Culture Festival 2026</strong></p>
+                <p style="margin-top: 4px;">Arrupe Hall • Booth 1 (Indonesia)</p>
+            </footer>
+        </main>
     </section>
 
-    <!-- VIEW 3: RESET PASSWORD -->
-    <section id="reset-password-view" class="view-container" style="display: none;">
-      <div class="welcome-banner" style="text-align: left;">
-        <h2>Reset Password</h2>
-        <p>Type your registered student email to receive a password reset link.</p>
-      </div>
+    <!-- PAGE 3: HISTORY PAGE -->
+    <section id="page-history" class="page-view">
+        <header class="top-nav">
+            <button class="btn-back" onclick="navigateTo('home')">← HOME</button>
+            <div class="brand-logo">Selamat Datang</div>
+        </header>
 
-      <form id="reset-form" novalidate>
-        <div class="form-group">
-          <label for="reset-email">Student AdDU Email</label>
-          <input type="email" id="reset-email" placeholder="e.g., kjcmendoza@addu.edu.ph" autocomplete="email" required>
-          <span id="reset-email-error" class="error-msg">Please enter a valid email ending in @addu.edu.ph</span>
-        </div>
+        <main class="container">
+            <h1 class="page-header-title">Our Culinary History</h1>
+            <p class="page-header-sub">Tales of Indonesian Heritage</p>
 
-        <button type="submit" class="btn btn-primary">Send Reset Link</button>
-        <button type="button" id="back-to-login" class="btn btn-secondary">Back to Log In</button>
-      </form>
+            <article class="card">
+                <h2 class="card-title">The Royal Cuisine</h2>
+                <span class="card-subtitle">From Palaces to Everyday Tables</span>
+                <p class="card-description" style="margin-bottom: 24px;">
+                    Indonesian cooking is a rich tradition spread across thousands of islands. From royal feast halls to everyday kitchens, its recipes focus on bringing out deep umami, natural sweetness, and comforting spices.
+                </p>
+
+                <div class="history-card">
+                    <div class="history-year">Nasi Goreng: Zero Waste Tradition</div>
+                    <div class="history-text">
+                        This famous fried rice comes from a thoughtful habit of never letting good food go to waste. Leftover rice was brought to life using sweet soy sauce and savory shrimp paste, turning humble leftovers into something extraordinary.
+                    </div>
+                </div>
+
+                <div class="history-card">
+                    <div class="history-year">Wedang Jahe: The Javanese Remedy</div>
+                    <div class="history-text">
+                        In Java, Wedang means warm drink and Jahe means ginger. Originally served in the royal courts of Central Java, host families prepared this herbal drink to welcome honored guests with warmth, health, and vitality.
+                    </div>
+                </div>
+
+                <div class="history-card">
+                    <div class="history-year">Krupuk: The Crunch of Indonesian Dining</div>
+                    <div class="history-text">
+                        A beloved staple at almost every Indonesian meal, Krupuk provides the iconic crispy crunch that balances rich sambals and savory dishes across the archipelago.
+                    </div>
+                </div>
+            </article>
+
+            <article class="card" style="text-align: center;">
+                <h2 class="card-title" style="font-size: 1.3rem;">Prepared By:</h2>
+                <p class="card-description" style="font-size: 0.85rem; color: var(--gold-light); margin-top: 8px;">
+                    Ablanque, Mendoza, Morales, Argame, Gaw, Mambaje, and Paglas
+                </p>
+            </article>
+
+            <footer>
+                <p><strong>International Food and Culture Festival 2026</strong></p>
+                <p style="margin-top: 4px;">Arrupe Hall • September 30, 2026</p>
+            </footer>
+        </main>
     </section>
 
-    <!-- VIEW 4: EDIT PROFILE -->
-    <section id="edit-profile-view" class="view-container" style="display: none;">
-      <div class="welcome-banner" style="text-align: left;">
-        <h2>Edit Profile</h2>
-        <p>Update your personal details below.</p>
-      </div>
+    <!-- Firebase SDK & Web App Interactive Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-      <form id="edit-profile-form" novalidate>
-        <div class="form-group">
-          <label for="edit-name">Full Name</label>
-          <input type="text" id="edit-name" placeholder="e.g., Kyle Joseph C. Mendoza" autocomplete="name" required>
-          <span id="edit-name-error" class="error-msg">Please enter your full name.</span>
-        </div>
+        // Your Web App's Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdUDRkUqEamY_lscdAeSNlhBZWs-EgNvU",
+            authDomain: "basil--n-bowl-kiosk-system.firebaseapp.com",
+            databaseURL: "https://basil--n-bowl-kiosk-system-default-rtdb.firebaseio.com",
+            projectId: "basil--n-bowl-kiosk-system",
+            storageBucket: "basil--n-bowl-kiosk-system.firebasestorage.app",
+            messagingSenderId: "282044269599",
+            appId: "1:282044269599:web:299b5406ef8ab9e27a012a",
+            measurementId: "G-45ZJB5EE0W"
+        };
 
-        <div class="form-group">
-          <label for="edit-year">Year Level</label>
-          <select id="edit-year" required>
-            <option value="" disabled selected>Select Year Level</option>
-            <option value="1st Year">1st Year</option>
-            <option value="2nd Year">2nd Year</option>
-            <option value="3rd Year">3rd Year</option>
-            <option value="4th Year">4th Year</option>
-            <option value="5th Year">5th Year</option>
-          </select>
-          <span id="edit-year-error" class="error-msg">Please select your year level.</span>
-        </div>
+        // Initialize Firebase & Realtime Database
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <button type="button" id="cancel-edit-profile" class="btn btn-secondary">Cancel</button>
-      </form>
-    </section>
+        // Realtime Stock Listener (Syncs counts with admin.html)
+        const stocksRef = ref(db, 'stocks');
+        onValue(stocksRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const nasiStock = data.nasi !== undefined ? data.nasi : 50;
+                const wedangStock = data.wedang !== undefined ? data.wedang : 50;
+                const krupukStock = data.krupuk !== undefined ? data.krupuk : 50;
 
-    <!-- VIEW 5: DAILY CHECK-IN / CHECK-OUT DASHBOARD -->
-    <section id="dashboard-view" class="view-container" style="display: none;">
-      <!-- Real-time Lab Availability Banner -->
-      <div id="lab-status-banner" class="lab-status-banner lab-status-open">
-        <span>🟢 Laboratory is Currently Open</span>
-      </div>
+                const nasiEl = document.getElementById('nasi-stock');
+                const wedangEl = document.getElementById('wedang-stock');
+                const krupukEl = document.getElementById('krupuk-stock');
 
-      <div class="user-profile-card">
-        <div class="user-profile-left">
-          <div class="avatar-ring">
-            <span id="user-initials">KM</span>
-          </div>
-          <div class="user-details">
-            <h2 id="user-greeting">Welcome!</h2>
-            <span id="user-info" class="badge-year">FUSEE Member</span>
-          </div>
-        </div>
-        <div class="profile-actions">
-          <button id="edit-profile-btn" class="btn-edit">Edit</button>
-          <button id="logout-btn" class="btn-logout">Log Out</button>
-        </div>
-      </div>
+                if (nasiEl) {
+                    if (nasiStock <= 0) {
+                        nasiEl.className = "stock-badge sold-out";
+                        nasiEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        nasiEl.className = "stock-badge";
+                        nasiEl.innerText = `📦 Available Samples: ${nasiStock}`;
+                    }
+                }
 
-      <div class="status-card">
-        <p class="status-label">CURRENT LABORATORY STATUS</p>
-        
-        <div id="status-indicator" class="status-pill status-out">
-          <span class="status-dot"></span>
-          <span id="status-text">CHECKED OUT</span>
-        </div>
+                if (wedangEl) {
+                    if (wedangStock <= 0) {
+                        wedangEl.className = "stock-badge sold-out";
+                        wedangEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        wedangEl.className = "stock-badge";
+                        wedangEl.innerText = `📦 Available Samples: ${wedangStock}`;
+                    }
+                }
 
-        <p id="status-time" class="status-subtext">Tap below when entering or leaving</p>
-
-        <button id="action-btn" class="btn btn-checkin" disabled>Loading...</button>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    // Firebase Configuration Credentials
-    const firebaseConfig = {
-      apiKey: "AIzaSyBr0Pm-3l94mNhT6NSkVShQqAQOREvRP_M",
-      authDomain: "digital-logbook-f3800.firebaseapp.com",
-      projectId: "digital-logbook-f3800",
-      storageBucket: "digital-logbook-f3800.firebasestorage.app",
-      messagingSenderId: "108147766041",
-      appId: "1:108147766041:web:ebd50d55590c3aa6ca7e28",
-      measurementId: "G-6DEVWDXEC9"
-    };
-
-    // Initialize Firebase
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const signupView = document.getElementById('signup-view');
-      const loginView = document.getElementById('login-view');
-      const resetPassView = document.getElementById('reset-password-view');
-      const editProfileView = document.getElementById('edit-profile-view');
-      const dashView = document.getElementById('dashboard-view');
-      
-      const signupForm = document.getElementById('signup-form');
-      const loginForm = document.getElementById('login-form');
-      const resetForm = document.getElementById('reset-form');
-      const editProfileForm = document.getElementById('edit-profile-form');
-
-      const goToLogin = document.getElementById('go-to-login');
-      const goToSignup = document.getElementById('go-to-signup');
-      const goToReset = document.getElementById('go-to-reset');
-      const backToLogin = document.getElementById('back-to-login');
-      
-      const editProfileBtn = document.getElementById('edit-profile-btn');
-      const cancelEditProfile = document.getElementById('cancel-edit-profile');
-      const logoutBtn = document.getElementById('logout-btn');
-
-      const userGreeting = document.getElementById('user-greeting');
-      const userInfo = document.getElementById('user-info');
-      const userInitials = document.getElementById('user-initials');
-      
-      const statusIndicator = document.getElementById('status-indicator');
-      const statusText = document.getElementById('status-text');
-      const statusTime = document.getElementById('status-time');
-      const actionBtn = document.getElementById('action-btn');
-      const labStatusBanner = document.getElementById('lab-status-banner');
-
-      // Modal Elements
-      const modalOverlay = document.getElementById('custom-modal');
-      const modalTitle = document.getElementById('modal-title');
-      const modalMsg = document.getElementById('modal-msg');
-      const modalClose = document.getElementById('modal-close');
-
-      function showAlert(title, message) {
-        modalTitle.textContent = title;
-        modalMsg.textContent = message;
-        modalOverlay.classList.add('active');
-      }
-
-      modalClose.addEventListener('click', () => {
-        modalOverlay.classList.remove('active');
-      });
-
-      // Sign Up Input elements
-      const regNameInput = document.getElementById('reg-name');
-      const regEmailInput = document.getElementById('reg-email');
-      const regYearSelect = document.getElementById('reg-year');
-      const regPassInput = document.getElementById('reg-password');
-
-      // Sign Up Error elements
-      const nameErr = document.getElementById('name-error');
-      const emailErr = document.getElementById('email-error');
-      const yearErr = document.getElementById('year-error');
-      const passErr = document.getElementById('password-error');
-
-      // Log In Input & Error elements
-      const loginEmailInput = document.getElementById('login-email');
-      const loginPassInput = document.getElementById('login-password');
-      const loginEmailErr = document.getElementById('login-email-error');
-      const loginPassErr = document.getElementById('login-password-error');
-
-      // Reset Password Input & Error elements
-      const resetEmailInput = document.getElementById('reset-email');
-      const resetEmailErr = document.getElementById('reset-email-error');
-
-      // Edit Profile Input & Error elements
-      const editNameInput = document.getElementById('edit-name');
-      const editYearSelect = document.getElementById('edit-year');
-      const editNameErr = document.getElementById('edit-name-error');
-      const editYearErr = document.getElementById('edit-year-error');
-
-      let isCheckedIn = false;
-      let currentLogId = null;
-      let currentUserProfile = null;
-      let unsubscribeLogListener = null;
-      let unsubscribeConfigListener = null;
-      let isManuallyLocked = false;
-
-      // Real-time input cleaning on typing
-      const setupLiveValidation = (inputEl, errorEl) => {
-        if (!inputEl) return;
-        inputEl.addEventListener('input', () => {
-          inputEl.classList.remove('input-error');
-          if (errorEl) errorEl.style.display = 'none';
+                if (krupukEl) {
+                    if (krupukStock <= 0) {
+                        krupukEl.className = "stock-badge sold-out";
+                        krupukEl.innerText = "❌ SOLD OUT";
+                    } else {
+                        krupukEl.className = "stock-badge";
+                        krupukEl.innerText = `📦 Available Samples: ${krupukStock}`;
+                    }
+                }
+            }
         });
-        inputEl.addEventListener('change', () => {
-          inputEl.classList.remove('input-error');
-          if (errorEl) errorEl.style.display = 'none';
-        });
-      };
 
-      setupLiveValidation(regNameInput, nameErr);
-      setupLiveValidation(regEmailInput, emailErr);
-      setupLiveValidation(regYearSelect, yearErr);
-      setupLiveValidation(regPassInput, passErr);
-      setupLiveValidation(loginEmailInput, loginEmailErr);
-      setupLiveValidation(loginPassInput, loginPassErr);
-      setupLiveValidation(resetEmailInput, resetEmailErr);
-      setupLiveValidation(editNameInput, editNameErr);
-      setupLiveValidation(editYearSelect, editYearErr);
-
-      // Helper function to hide all views cleanly
-      function hideAllViews() {
-        signupView.style.display = 'none';
-        loginView.style.display = 'none';
-        resetPassView.style.display = 'none';
-        editProfileView.style.display = 'none';
-        dashView.style.display = 'none';
-      }
-
-      // 1. Operating Hours Check (Mon-Fri 7:30 AM - 9:00 PM | Sat 7:30 AM - 6:00 PM | Sun Closed)
-      function isLabOpen() {
-        const now = new Date();
-        const day = now.getDay(); // 0 = Sunday, 1 = Mon, ..., 6 = Sat
-        const minutes = now.getHours() * 60 + now.getMinutes();
-
-        if (day === 0) return false; // Sunday closed
-
-        const openTime = 7 * 60 + 30; // 7:30 AM = 450 mins
-        const closeTime = (day === 6) ? (18 * 60) : (21 * 60); // Sat = 6:00 PM (1080 mins), Mon-Fri = 9:00 PM (1260 mins)
-
-        return minutes >= openTime && minutes < closeTime;
-      }
-
-      // Update Top Status Banner for Lab State
-      function refreshLabBannerStatus() {
-        if (!labStatusBanner) return;
-
-        const open = isLabOpen();
-        if (isManuallyLocked) {
-          labStatusBanner.className = 'lab-status-banner lab-status-locked';
-          labStatusBanner.innerHTML = '🔒 Check-Ins Locked by Administrator';
-        } else if (open) {
-          labStatusBanner.className = 'lab-status-banner lab-status-open';
-          labStatusBanner.innerHTML = '🟢 Laboratory is Currently Open';
-        } else {
-          labStatusBanner.className = 'lab-status-banner lab-status-closed';
-          labStatusBanner.innerHTML = '🔴 Laboratory is Currently Closed';
-        }
-      }
-
-      // 2. Cooldown Helper (1 Minute / 60 Seconds)
-      function getRemainingCooldownSeconds() {
-        const lastAction = localStorage.getItem('last_lab_action');
-        if (!lastAction) return 0;
-        const elapsed = (Date.now() - parseInt(lastAction, 10)) / 1000;
-        return elapsed < 60 ? Math.ceil(60 - elapsed) : 0;
-      }
-
-      function clearErrors() {
-        [regNameInput, regEmailInput, regYearSelect, regPassInput, loginEmailInput, loginPassInput, resetEmailInput, editNameInput, editYearSelect].forEach(i => i && i.classList.remove('input-error'));
-        
-        if (emailErr) emailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-        if (loginEmailErr) loginEmailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-        if (loginPassErr) loginPassErr.textContent = 'Password must be at least 6 characters.';
-        if (resetEmailErr) resetEmailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-
-        [nameErr, emailErr, yearErr, passErr, loginEmailErr, loginPassErr, resetEmailErr, editNameErr, editYearErr].forEach(e => e && (e.style.display = 'none'));
-      }
-
-      // Switch Navigation Views
-      goToLogin.addEventListener('click', () => {
-        clearErrors();
-        hideAllViews();
-        loginView.style.display = 'block';
-      });
-
-      goToSignup.addEventListener('click', () => {
-        clearErrors();
-        hideAllViews();
-        signupView.style.display = 'block';
-      });
-
-      goToReset.addEventListener('click', () => {
-        clearErrors();
-        hideAllViews();
-        resetPassView.style.display = 'block';
-      });
-
-      backToLogin.addEventListener('click', () => {
-        clearErrors();
-        hideAllViews();
-        loginView.style.display = 'block';
-      });
-
-      editProfileBtn.addEventListener('click', () => {
-        if (!currentUserProfile) return;
-        clearErrors();
-        editNameInput.value = currentUserProfile.fullName || '';
-        editYearSelect.value = currentUserProfile.yearLevel || '';
-        hideAllViews();
-        editProfileView.style.display = 'block';
-      });
-
-      cancelEditProfile.addEventListener('click', () => {
-        clearErrors();
-        if (currentUserProfile) {
-          showDashboard(currentUserProfile);
-        } else {
-          hideAllViews();
-          loginView.style.display = 'block';
-        }
-      });
-
-      // Firebase Auth Observer (With Auto-Healing Profile Support)
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          try {
-            const userRef = db.collection('users').doc(user.uid);
-            const userDoc = await userRef.get();
-
-            if (userDoc.exists && userDoc.data().fullName && userDoc.data().fullName !== 'Student') {
-              currentUserProfile = userDoc.data();
-            } else {
-              let derivedName = user.displayName;
-              if (!derivedName && user.email) {
-                const emailPrefix = user.email.split('@')[0];
-                derivedName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
-              }
-
-              currentUserProfile = {
-                fullName: derivedName || 'Student',
-                email: user.email,
-                yearLevel: (userDoc.exists && userDoc.data().yearLevel) ? userDoc.data().yearLevel : '1st Year',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-              };
-
-              await userRef.set(currentUserProfile, { merge: true });
-            }
-
-            showDashboard(currentUserProfile);
-            listenToAttendanceStatus(user.uid);
-            listenToLabConfig();
-
-          } catch (err) {
-            console.error("Error fetching user profile:", err);
-            let derivedName = user.displayName;
-            if (!derivedName && user.email) {
-              const emailPrefix = user.email.split('@')[0];
-              derivedName = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
-            }
-            currentUserProfile = {
-              fullName: derivedName || 'Student',
-              email: user.email,
-              yearLevel: '1st Year'
-            };
-            showDashboard(currentUserProfile);
-            listenToAttendanceStatus(user.uid);
-            listenToLabConfig();
-          }
-        } else {
-          if (unsubscribeLogListener) {
-            unsubscribeLogListener();
-            unsubscribeLogListener = null;
-          }
-          if (unsubscribeConfigListener) {
-            unsubscribeConfigListener();
-            unsubscribeConfigListener = null;
-          }
-          currentUserProfile = null;
-          currentLogId = null;
-          isCheckedIn = false;
-          hideAllViews();
-          loginView.style.display = 'block';
-        }
-      });
-
-      // Real-time listener for Admin Lock state
-      function listenToLabConfig() {
-        if (unsubscribeConfigListener) unsubscribeConfigListener();
-
-        unsubscribeConfigListener = db.collection('settings').doc('labConfig')
-          .onSnapshot((doc) => {
-            if (doc.exists && doc.data().manualLock === true) {
-              isManuallyLocked = true;
-            } else {
-              isManuallyLocked = false;
-            }
-            refreshLabBannerStatus();
-          }, (err) => {
-            console.warn("Error subscribing to lab config:", err);
-          });
-      }
-
-      function listenToAttendanceStatus(uid) {
-        if (unsubscribeLogListener) unsubscribeLogListener();
-
-        unsubscribeLogListener = db.collection('attendance_logs')
-          .where('userId', '==', uid)
-          .where('status', '==', 'IN')
-          .limit(1)
-          .onSnapshot((snapshot) => {
-            if (!snapshot.empty) {
-              const doc = snapshot.docs[0];
-              const logData = doc.data();
-              currentLogId = doc.id;
-              isCheckedIn = true;
-              if (statusTime) statusTime.textContent = `Checked in at ${logData.checkInTime || ''}`;
-            } else {
-              isCheckedIn = false;
-              currentLogId = null;
-              if (statusTime) statusTime.textContent = 'Tap below when entering or leaving';
-            }
-            updateStatusUI();
-          }, (error) => {
-            console.error("Error listening to attendance log:", error);
-            updateStatusUI();
-          });
-      }
-
-      // Handle Sign Up
-      signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearErrors();
-
-        let isValid = true;
-        const name = regNameInput.value.trim();
-        const email = regEmailInput.value.trim().toLowerCase();
-        const year = regYearSelect.value;
-        const password = regPassInput.value;
-
-        if (!name) {
-          regNameInput.classList.add('input-error');
-          nameErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!email || !email.endsWith('@addu.edu.ph')) {
-          regEmailInput.classList.add('input-error');
-          emailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-          emailErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!year) {
-          regYearSelect.classList.add('input-error');
-          yearErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!password || password.length < 6) {
-          regPassInput.classList.add('input-error');
-          passErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!isValid) return;
-
-        const submitBtn = signupForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating Account...';
-
-        try {
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          await userCredential.user.updateProfile({ displayName: name });
-
-          await db.collection('users').doc(userCredential.user.uid).set({
-            fullName: name,
-            email: email,
-            yearLevel: year,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          signupForm.reset();
-        } catch (error) {
-          regEmailInput.classList.add('input-error');
-          emailErr.textContent = error.message || 'Error creating account. Please try again.';
-          emailErr.style.display = 'block';
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Sign Up';
-        }
-      });
-
-      // Handle Log In
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearErrors();
-
-        let isValid = true;
-        const email = loginEmailInput.value.trim().toLowerCase();
-        const password = loginPassInput.value;
-
-        if (!email || !email.endsWith('@addu.edu.ph')) {
-          loginEmailInput.classList.add('input-error');
-          loginEmailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-          loginEmailErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!password) {
-          loginPassInput.classList.add('input-error');
-          loginPassErr.textContent = 'Please enter your password.';
-          loginPassErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!isValid) return;
-
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Logging In...';
-
-        try {
-          await auth.signInWithEmailAndPassword(email, password);
-          loginForm.reset();
-        } catch (error) {
-          loginPassInput.classList.add('input-error');
-          loginPassErr.textContent = 'Invalid email or password. Please try again.';
-          loginPassErr.style.display = 'block';
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Log In';
-        }
-      });
-
-      // Handle Reset Password Email
-      resetForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearErrors();
-
-        const email = resetEmailInput.value.trim().toLowerCase();
-
-        if (!email || !email.endsWith('@addu.edu.ph')) {
-          resetEmailInput.classList.add('input-error');
-          resetEmailErr.textContent = 'Please enter a valid email ending in @addu.edu.ph';
-          resetEmailErr.style.display = 'block';
-          return;
-        }
-
-        const submitBtn = resetForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending Link...';
-
-        try {
-          await auth.sendPasswordResetEmail(email);
-          resetForm.reset();
-          showAlert("Password Reset Sent", `A password reset link has been sent to ${email}. Please check your email inbox or spam folder.`);
-          hideAllViews();
-          loginView.style.display = 'block';
-        } catch (error) {
-          resetEmailInput.classList.add('input-error');
-          resetEmailErr.textContent = error.message || 'Failed to send reset link. Please verify your email.';
-          resetEmailErr.style.display = 'block';
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Send Reset Link';
-        }
-      });
-
-      // Handle Edit Profile Form
-      editProfileForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        clearErrors();
-
-        const newName = editNameInput.value.trim();
-        const newYear = editYearSelect.value;
-        const user = auth.currentUser;
-
-        let isValid = true;
-
-        if (!newName) {
-          editNameInput.classList.add('input-error');
-          editNameErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!newYear) {
-          editYearSelect.classList.add('input-error');
-          editYearErr.style.display = 'block';
-          isValid = false;
-        }
-
-        if (!isValid || !user) return;
-
-        const submitBtn = editProfileForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving Changes...';
-
-        try {
-          await user.updateProfile({ displayName: newName });
-
-          await db.collection('users').doc(user.uid).update({
-            fullName: newName,
-            yearLevel: newYear,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          currentUserProfile.fullName = newName;
-          currentUserProfile.yearLevel = newYear;
-
-          showAlert("Success", "Profile details updated successfully!");
-          showDashboard(currentUserProfile);
-
-        } catch (err) {
-          console.error("Error updating profile:", err);
-          showAlert("Update Failed", "Could not update profile. Please try again.");
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Save Changes';
-        }
-      });
-
-      // Handle Log Out
-      logoutBtn.addEventListener('click', () => {
-        auth.signOut();
-      });
-
-      function showDashboard(userData) {
-        hideAllViews();
-        dashView.style.display = 'block';
-
-        const firstName = (userData.fullName || 'Student').split(' ')[0];
-        userGreeting.textContent = `Hello, ${firstName}!`;
-        userInfo.textContent = `${userData.yearLevel || 'Student'} • FUSEE`;
-
-        const nameParts = (userData.fullName || 'FE').split(' ').filter(p => p.length > 0);
-        let initials = 'FE';
-        if (nameParts.length >= 2) {
-          initials = `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
-        } else if (nameParts.length === 1) {
-          initials = nameParts[0].substring(0, 2);
-        }
-        userInitials.textContent = initials.toUpperCase();
-        refreshLabBannerStatus();
-      }
-
-      // Check In / Check Out Action
-      actionBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user || !currentUserProfile) return;
-
-        // --- COOLDOWN CHECK ---
-        const remainingSeconds = getRemainingCooldownSeconds();
-        if (remainingSeconds > 0) {
-          showAlert("Cooldown Active", `Please wait ${remainingSeconds} second(s) before checking in or out again.`);
-          return;
-        }
-
-        // --- OPERATING HOURS & MANUAL LOCK CHECK ---
-        const labOpen = isLabOpen();
-
-        if (!labOpen || isManuallyLocked) {
-          if (!isCheckedIn) {
-            const lockMsg = isManuallyLocked 
-              ? "Check-ins are currently locked by the laboratory administrator." 
-              : "The laboratory is currently closed. Check-ins are disabled.\n\nOperating Hours:\nMon-Fri: 7:30 AM - 9:00 PM\nSaturday: 7:30 AM - 6:00 PM\nSunday: Closed";
-            showAlert("Laboratory Closed", lockMsg);
-            return;
-          }
-        }
-
-        actionBtn.disabled = true;
-        const previousBtnText = actionBtn.textContent;
-        actionBtn.textContent = isCheckedIn ? 'Checking Out...' : 'Checking In...';
-
-        const now = new Date();
-        const todayISO = now.toISOString().slice(0, 10);
-        
-        // Explicitly format to 12-hour AM/PM format regardless of device local language settings
-        const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-        try {
-          if (!isCheckedIn) {
-            await db.collection('attendance_logs').add({
-              userId: user.uid,
-              fullName: currentUserProfile.fullName || 'Student',
-              email: user.email,
-              yearLevel: currentUserProfile.yearLevel || '1st Year',
-              date: todayISO,
-              checkInTime: timeString,
-              checkOutTime: null,
-              status: 'IN',
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        // Screen Navigation Function
+        window.navigateTo = function(pageId) {
+            document.querySelectorAll('.page-view').forEach(page => {
+                page.classList.remove('active');
             });
-          } else if (currentLogId) {
-            await db.collection('attendance_logs').doc(currentLogId).update({
-              checkOutTime: timeString,
-              status: 'OUT',
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            window.scrollTo(0, 0);
+        };
+
+        // Live Reaction Handler (Saves to Firebase + Confetti Burst)
+        window.triggerReaction = function(reactionText) {
+            // Push reaction to Firebase database
+            push(ref(db, 'booth_reactions'), {
+                reaction: reactionText,
+                timestamp: new Date().toISOString()
             });
-          }
 
-          // Save timestamp to local storage for 1-minute cooldown
-          localStorage.setItem('last_lab_action', Date.now().toString());
+            // Trigger particle animation burst
+            for (let i = 0; i < 35; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2 + 100,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.8) * 12,
+                    color: ['#c5a059', '#e6c88b', '#d9534f', '#ffffff'][Math.floor(Math.random() * 4)],
+                    size: Math.random() * 6 + 3,
+                    alpha: 1
+                });
+            }
+        };
 
-        } catch (err) {
-          console.error("Error updating check-in status:", err);
-          showAlert("Error", "Failed to update status. Please try again.");
-          actionBtn.textContent = previousBtnText;
-        } finally {
-          actionBtn.disabled = false;
+        // Canvas Particles Confetti System
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-      });
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-      function updateStatusUI() {
-        actionBtn.disabled = false;
-        if (isCheckedIn) {
-          statusIndicator.className = 'status-pill status-in';
-          statusText.textContent = 'CHECKED IN';
-          actionBtn.textContent = 'CHECK OUT OF LABORATORY';
-          actionBtn.className = 'btn btn-checkout';
-        } else {
-          statusIndicator.className = 'status-pill status-out';
-          statusText.textContent = 'CHECKED OUT';
-          actionBtn.textContent = 'CHECK IN TO LABORATORY';
-          actionBtn.className = 'btn btn-checkin';
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25;
+                p.alpha -= 0.02;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(p.alpha, 0);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                if (p.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animate);
         }
-      }
-    });
-  </script>
+        animate();
+    </script>
 </body>
 </html>
