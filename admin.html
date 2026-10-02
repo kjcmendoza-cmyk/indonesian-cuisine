@@ -1,451 +1,1965 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Esteemed Royal Dining</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-dark: #0a0705;
-            --card-bg: #16110e;
-            --gold-primary: #c5a059;
-            --text-main: #f4efea;
-            --text-muted: #b5a89e;
-            --border-gold: rgba(197, 160, 89, 0.35);
-            --safe-green: #4caf50;
-            --warn-red: #d9534f;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FUSEE Admin Portal | Digital Logbook</title>
+  
+  <!-- Google Font: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+  <!-- Mobile Settings -->
+  <meta name="theme-color" content="#ffffff">
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            padding: 24px;
-        }
+  <!-- Firebase Web SDKs (Compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase App Check SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-appcheck-compat.js"></script>
+  
+  <!-- ExcelJS Library for XLSX Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
-        .header {
-            margin-bottom: 32px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-gold);
-        }
+  <!-- Admin Theme Styling -->
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: rgba(99, 102, 241, 0.15);
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
 
-        .header h1 {
-            color: var(--gold-primary);
-            font-size: 1.8rem;
-        }
+      --brand-purple: #6366f1;
+      --brand-purple-dark: #4f46e5;
+      --brand-pink: #ec4899;
+      --brand-amber: #f59e0b;
+      
+      --status-in: #10b981;
+      --status-out: #ef4444;
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
-        }
+      --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
 
-        .admin-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-gold);
-            border-radius: 6px;
-            padding: 24px;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        .admin-card h2 {
-            font-size: 1.2rem;
-            color: var(--gold-primary);
-            margin-bottom: 16px;
-        }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
 
-        .stock-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            text-align: center;
-        }
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-        .controls {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
+    /* Top Navigation Bar */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 20px 28px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
 
-        button {
-            background: rgba(10, 7, 5, 0.8);
-            border: 1px solid var(--gold-primary);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-        button:hover {
-            background: var(--gold-primary);
-            color: var(--bg-dark);
-        }
+    .admin-logo {
+      height: 54px;
+      width: auto;
+      object-fit: contain;
+    }
 
-        button.btn-danger {
-            border-color: var(--warn-red);
-            color: var(--warn-red);
-        }
+    .brand-titles h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
 
-        button.btn-danger:hover {
-            background: var(--warn-red);
-            color: white;
-        }
+    .brand-titles p {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
 
-        /* Custom Modal Dialog */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
+    .admin-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+    .operating-hours-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      flex-wrap: wrap;
+    }
 
-        .modal-card {
-            background: var(--card-bg);
-            border: 1px solid var(--gold-primary);
-            border-radius: 8px;
-            padding: 28px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-            animation: fadeIn 0.2s ease-out;
-        }
+    .btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .btn-export {
+      background: linear-gradient(135deg, var(--brand-purple), var(--brand-purple-dark));
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+    }
 
-        .modal-card h3 {
-            color: var(--gold-primary);
-            font-size: 1.25rem;
-            margin-bottom: 6px;
-        }
+    .btn-export:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
 
-        .modal-card p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
 
-        .modal-card input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            background: rgba(10, 7, 5, 0.9);
-            border: 1px solid var(--border-gold);
-            border-radius: 4px;
-            color: var(--text-main);
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 24px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
+    .btn-reset:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
 
-        .modal-card input[type="number"]:focus {
-            border-color: var(--gold-primary);
-            box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
-        }
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
 
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.18);
+    }
 
-        .btn-primary {
-            background: var(--gold-primary);
-            color: var(--bg-dark);
-            border: 1px solid var(--gold-primary);
-        }
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
 
-        .btn-primary:hover {
-            background: #d4b26f;
-        }
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+    }
 
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--text-muted);
-            color: var(--text-muted);
-        }
+    .metric-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
 
-        .btn-secondary:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
-            background: rgba(255, 255, 255, 0.05);
-        }
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
 
-        /* Reactions Section */
-        .reactions-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-gold);
-            border-radius: 6px;
-            padding: 24px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
+    /* Navigation Tabs */
+    .tabs-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+      padding-bottom: 2px;
+      flex-wrap: wrap;
+    }
 
-        .reaction-item {
-            padding: 12px;
-            border-bottom: 1px solid rgba(197, 160, 89, 0.15);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .nav-tab-btn {
+      padding: 10px 22px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .reaction-text {
-            font-weight: 600;
-            color: var(--gold-primary);
-        }
+    .nav-tab-btn:hover {
+      color: var(--brand-purple);
+      background: rgba(99, 102, 241, 0.05);
+    }
 
-        .reaction-time {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
+    .nav-tab-btn.active {
+      color: var(--brand-purple);
+      border-bottom-color: var(--brand-purple);
+      background: rgba(99, 102, 241, 0.08);
+    }
 
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-    </style>
+    /* Filters Section */
+    .filter-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .search-input, .select-filter, .date-filter, .time-filter {
+      padding: 10px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.88rem;
+      outline: none;
+      color: var(--text-primary);
+      background: #ffffff;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .search-input:focus, .select-filter:focus, .date-filter:focus, .time-filter:focus {
+      border-color: var(--brand-purple);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Logs Data Table */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+      overflow: hidden;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    /* Force table cells onto a single line */
+    th {
+      background: #f1f5f9;
+      padding: 14px 18px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      color: var(--text-primary);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: rgba(235, 243, 254, 0.4);
+    }
+
+    /* Action Buttons */
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-action-edit {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--brand-purple-dark);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .btn-action-edit:hover {
+      background: var(--brand-purple);
+      color: #ffffff;
+    }
+
+    .btn-action-danger {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .btn-action-danger:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    /* Status Badges */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .badge-in {
+      background: rgba(16, 185, 129, 0.12);
+      color: #047857;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .badge-out {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-secondary);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .badge-pc {
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--brand-purple-dark);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .badge-table {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .status-dot-sm {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .badge-in .status-dot-sm {
+      background-color: var(--status-in);
+    }
+
+    .badge-out .status-dot-sm {
+      background-color: var(--text-muted);
+    }
+
+    /* Auth Gate Screen */
+    .auth-gate {
+      max-width: 400px;
+      margin: 80px auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    .auth-gate h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .auth-gate p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .auth-gate input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .auth-gate input:focus {
+      border-color: var(--brand-purple);
+    }
+
+    .auth-gate .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--brand-purple), var(--brand-purple-dark));
+      color: #fff;
+    }
+
+    .error-text {
+      color: #ef4444;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* Custom Modal Overrides for Visuals */
+    .custom-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .custom-modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .custom-modal {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 420px;
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      transform: scale(0.95);
+      transition: transform 0.2s ease-in-out;
+      text-align: center;
+    }
+
+    .custom-modal-overlay.active .custom-modal {
+      transform: scale(1);
+    }
+
+    .custom-modal-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .custom-modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .custom-modal-message {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .custom-modal-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.95rem;
+      margin-bottom: 24px;
+      outline: none;
+      display: none;
+    }
+
+    .custom-modal-input:focus {
+      border-color: var(--brand-purple);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .custom-modal-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-modal-cancel {
+      background: #ffffff;
+      color: var(--text-secondary);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .btn-modal-cancel:hover {
+      background: #f1f5f9;
+    }
+
+    .btn-modal-confirm {
+      background: var(--brand-purple);
+      color: white;
+    }
+    .btn-modal-confirm:hover {
+      background: var(--brand-purple-dark);
+    }
+    
+    .btn-modal-danger {
+      background: var(--status-out);
+      color: white;
+    }
+    .btn-modal-danger:hover {
+      background: #dc2626;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Dashboard Control Panel</h1>
-        <p style="color: var(--text-muted);">Manage inventory and view live audience feedback.</p>
+  <!-- Custom Notification Modal -->
+  <div id="custom-modal-root" class="custom-modal-overlay">
+    <div class="custom-modal">
+      <div id="custom-modal-icon" class="custom-modal-icon">ℹ️</div>
+      <div id="custom-modal-title" class="custom-modal-title">Notification</div>
+      <div id="custom-modal-message" class="custom-modal-message"></div>
+      <input type="text" id="custom-modal-input" class="custom-modal-input" />
+      <div class="custom-modal-actions">
+        <button id="custom-modal-btn-cancel" class="btn btn-modal-cancel">Cancel</button>
+        <button id="custom-modal-btn-confirm" class="btn btn-modal-confirm">OK</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Stock Controls -->
-    <div class="dashboard-grid">
-        <!-- Nasi Goreng -->
-        <div class="admin-card">
-            <h2>Nasi Goreng Stock</h2>
-            <div class="stock-value" id="admin-nasi-val">--</div>
-            <div class="controls">
-                <button onclick="updateStock('nasi', -1)">- 1</button>
-                <button onclick="updateStock('nasi', 1)">+ 1</button>
-                <button onclick="setCustomStock('nasi')">Set Value</button>
-            </div>
+  <!-- Dedicated Modal for Editing Student Profiles -->
+  <div id="edit-student-modal-root" class="custom-modal-overlay">
+    <div class="custom-modal" style="max-width: 460px; text-align: left;">
+      <div class="custom-modal-title" style="margin-bottom: 16px; font-size: 1.2rem;">✏️️ Edit Student Profile</div>
+      <form id="edit-student-form">
+        <input type="hidden" id="edit-student-id">
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">FULL NAME</label>
+          <input type="text" id="edit-student-name" class="search-input" style="width: 100%;" required>
         </div>
-
-        <!-- Wedang Jahe -->
-        <div class="admin-card">
-            <h2>Wedang Jahe Stock</h2>
-            <div class="stock-value" id="admin-wedang-val">--</div>
-            <div class="controls">
-                <button onclick="updateStock('wedang', -1)">- 1</button>
-                <button onclick="updateStock('wedang', 1)">+ 1</button>
-                <button onclick="setCustomStock('wedang')">Set Value</button>
-            </div>
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">ADDU EMAIL</label>
+          <input type="email" id="edit-student-email" class="search-input" style="width: 100%;" required>
         </div>
-
-        <!-- Krupuk -->
-        <div class="admin-card">
-            <h2>Krupuk Stock</h2>
-            <div class="stock-value" id="admin-krupuk-val">--</div>
-            <div class="controls">
-                <button onclick="updateStock('krupuk', -1)">- 1</button>
-                <button onclick="updateStock('krupuk', 1)">+ 1</button>
-                <button onclick="setCustomStock('krupuk')">Set Value</button>
-            </div>
+        <div style="margin-bottom: 24px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">YEAR LEVEL</label>
+          <select id="edit-student-year" class="select-filter" style="width: 100%;" required>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+            <option value="5th Year">5th Year</option>
+          </select>
         </div>
+        <div class="custom-modal-actions" style="justify-content: flex-end;">
+          <button type="button" id="edit-student-cancel" class="btn btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-modal-confirm">Save Changes</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Live Reactions -->
-    <div class="reactions-container">
-        <div class="flex-between">
-            <h2>Live Audience Reactions</h2>
-            <button class="btn-danger" onclick="clearReactions()">Clear Logs</button>
+  <!-- Dedicated Modal for Class Schedules -->
+  <div id="schedule-modal-root" class="custom-modal-overlay">
+    <div class="custom-modal" style="max-width: 460px; text-align: left;">
+      <div class="custom-modal-title" style="margin-bottom: 16px; font-size: 1.2rem;">📅 Schedule Manager</div>
+      <form id="schedule-form">
+        <input type="hidden" id="schedule-id">
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">COURSE NAME & ROOM</label>
+          <input type="text" id="schedule-course" class="search-input" style="width: 100%;" placeholder="e.g. EE 315 - Rm 204" required>
         </div>
-        <div id="reactions-list">
-            <p style="color: var(--text-muted);">Waiting for reactions...</p>
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">DAY OF WEEK</label>
+          <select id="schedule-day" class="select-filter" style="width: 100%;" required>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
         </div>
+        <div style="display: flex; gap: 14px; margin-bottom: 24px;">
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">START TIME</label>
+            <input type="time" id="schedule-start" class="time-filter" style="width: 100%;" required>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); display: block; margin-bottom: 6px;">END TIME</label>
+            <input type="time" id="schedule-end" class="time-filter" style="width: 100%;" required>
+          </div>
+        </div>
+        <div class="custom-modal-actions" style="justify-content: flex-end;">
+          <button type="button" id="schedule-cancel" class="btn btn-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-modal-confirm">Save Schedule</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Styled Stock Input Modal -->
-    <div class="modal-overlay" id="stock-modal">
-        <div class="modal-card">
-            <h3 id="modal-title">Set Stock Value</h3>
-            <p id="modal-desc">Enter the new total quantity for this item.</p>
-            <input type="number" id="modal-stock-input" min="0" placeholder="0">
-            <div class="modal-actions">
-                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn-primary" onclick="confirmCustomStock()">Update Stock</button>
-            </div>
+  <!-- AUTHENTICATION SCREEN FOR ADMIN -->
+  <div id="admin-login-screen" class="auth-gate">
+    <h2>Admin Portal Access</h2>
+    <p>Sign in with administrative credentials to access live lab telemetry and logs.</p>
+    <form id="admin-login-form">
+      <input type="email" id="admin-email" placeholder="Admin Email" required>
+      <input type="password" id="admin-pass" placeholder="Password" required>
+      <button type="submit" class="btn btn-login">Login to Dashboard</button>
+      <p id="admin-login-error" class="error-text">Invalid credentials or access unauthorized.</p>
+    </form>
+  </div>
+
+  <!-- MAIN ADMIN DASHBOARD -->
+  <div id="admin-dashboard-screen" class="admin-container" style="display: none;">
+    <header class="admin-header">
+      <div class="brand-section">
+        <img src="fusee-logo.png" alt="FUSEE Logo" class="admin-logo" onerror="this.style.display='none'">
+        <div class="brand-titles">
+          <h1>EE Lab Logbook Admin</h1>
+          <p>Real-time Attendance & Student Telemetry Monitor</p>
         </div>
-    </div>
+      </div>
+      <div class="admin-controls">
+        <!-- Operating Hours Time Pickers -->
+        <div class="operating-hours-bar">
+          <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-primary); white-space: nowrap;">⏰ Operating Hours:</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="open-time-input" style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">Open</label>
+            <input type="time" id="open-time-input" class="time-filter" style="padding: 6px 10px; font-size: 0.82rem;">
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="close-time-input" style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);">Close</label>
+            <input type="time" id="close-time-input" class="time-filter" style="padding: 6px 10px; font-size: 0.82rem;">
+          </div>
+          <button id="save-hours-btn" class="btn" style="background: var(--brand-purple); color: #fff; padding: 8px 14px; font-size: 0.8rem;">Save Hours</button>
+        </div>
 
-    <!-- Firebase SDK Setup -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        <!-- Manual Lock Toggle Button -->
+        <button id="toggle-lock-btn" class="btn" style="background: #f59e0b; color: #fff;">
+          🔒 Lock Check-Ins
+        </button>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAdUDRkUqEamY_lscdAeSNlhBZWs-EgNvU",
-            authDomain: "basil--n-bowl-kiosk-system.firebaseapp.com",
-            databaseURL: "https://basil--n-bowl-kiosk-system-default-rtdb.firebaseio.com",
-            projectId: "basil--n-bowl-kiosk-system",
-            storageBucket: "basil--n-bowl-kiosk-system.firebasestorage.app",
-            messagingSenderId: "282044269599",
-            appId: "1:282044269599:web:299b5406ef8ab9e27a012a",
-            measurementId: "G-45ZJB5EE0W"
-        };
+        <!-- Log Resetter Button -->
+        <button id="reset-logs-btn" class="btn btn-reset">
+          🗑️️ Reset All Logs
+        </button>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        <button id="export-excel-btn" class="btn btn-export">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+          Export to Excel
+        </button>
+        <button id="admin-logout-btn" class="btn btn-logout">Logout</button>
+      </div>
+    </header>
 
-        // State tracking for modal input
-        let activeItemKey = null;
+    <!-- METRICS OVERVIEW -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Active PCs</div>
+        <div id="metric-active-pcs" class="metric-value">0 / 10</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Active Tables</div>
+        <div id="metric-active-tables" class="metric-value">0 / 14</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Active</div>
+        <div id="metric-total-active" class="metric-value">0 / 24</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Logs Today</div>
+        <div id="metric-logs-today" class="metric-value">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Registered Students</div>
+        <div id="metric-registered-students" class="metric-value">0</div>
+      </div>
+    </section>
 
-        const itemDisplayNames = {
-            nasi: 'Nasi Goreng',
-            wedang: 'Wedang Jahe',
-            krupuk: 'Krupuk'
-        };
+    <!-- TAB NAVIGATION BAR -->
+    <nav class="tabs-container">
+      <button id="tab-btn-logs" class="nav-tab-btn active">📋 Attendance Logs</button>
+      <button id="tab-btn-students" class="nav-tab-btn">🎓 Registered Students Directory</button>
+      <button id="tab-btn-schedule" class="nav-tab-btn">📅 Schedule Manager</button>
+      <button id="tab-btn-whitelist" class="nav-tab-btn">🛡️ EE Whitelist</button>
+    </nav>
 
-        // --- INVENTORY MANAGEMENT ---
-        const stocksRef = ref(db, 'stocks');
+    <!-- TAB 1: ATTENDANCE LOGS VIEW -->
+    <div id="tab-logs-view">
+      <!-- SEARCH & FILTERS FOR LOGS -->
+      <section class="filter-bar">
+        <input type="text" id="filter-search" class="search-input" placeholder="Search by student name or email...">
         
-        onValue(stocksRef, (snapshot) => {
-            const data = snapshot.val() || { nasi: 50, wedang: 50, krupuk: 50 };
-            
-            document.getElementById('admin-nasi-val').innerText = data.nasi !== undefined ? data.nasi : 50;
-            document.getElementById('admin-wedang-val').innerText = data.wedang !== undefined ? data.wedang : 50;
-            document.getElementById('admin-krupuk-val').innerText = data.krupuk !== undefined ? data.krupuk : 50;
-            
-            // Expose current data globally for the update buttons
-            window.currentStocks = data;
-        });
+        <select id="filter-year" class="select-filter">
+          <option value="ALL">All Year Levels</option>
+          <option value="1st Year">1st Year</option>
+          <option value="2nd Year">2nd Year</option>
+          <option value="3rd Year">3rd Year</option>
+          <option value="4th Year">4th Year</option>
+          <option value="5th Year">5th Year</option>
+        </select>
 
-        window.updateStock = async function(item, amount) {
-            const currentVal = window.currentStocks && window.currentStocks[item] !== undefined 
-                ? window.currentStocks[item] 
-                : 50;
-            let newVal = currentVal + amount;
-            if (newVal < 0) newVal = 0; // Prevent negative stock
-            
-            await set(ref(db, 'stocks/' + item), newVal);
+        <select id="filter-status" class="select-filter">
+          <option value="ALL">All Statuses</option>
+          <option value="IN">Currently IN</option>
+          <option value="OUT">Checked OUT</option>
+        </select>
+
+        <select id="filter-purpose" class="select-filter">
+          <option value="ALL">All Purposes</option>
+          <option value="PC">PC Only</option>
+          <option value="Table">Table Only</option>
+        </select>
+
+        <input type="date" id="filter-date" class="date-filter">
+      </section>
+
+      <!-- LOGS TABLE -->
+      <section class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Student Name</th>
+                <th>AdDU Email</th>
+                <th>Year Level</th>
+                <th>Purpose</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="logs-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading live records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: REGISTERED STUDENTS DIRECTORY VIEW -->
+    <div id="tab-students-view" style="display: none;">
+      <section class="filter-bar" style="justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 14px; flex: 1; flex-wrap: wrap;">
+          <input type="text" id="filter-student-search" class="search-input" placeholder="Search registered student by name or email...">
+          <select id="filter-student-year" class="select-filter">
+            <option value="ALL">All Year Levels</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+            <option value="5th Year">5th Year</option>
+          </select>
+        </div>
+        <!-- Registered Student Counter Badge -->
+        <div id="student-count-badge" style="font-size: 0.85rem; font-weight: 800; color: var(--brand-purple-dark); background: rgba(99, 102, 241, 0.1); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(99, 102, 241, 0.2); white-space: nowrap;">
+          Total Students: 0
+        </div>
+      </section>
+
+      <section class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Student Name</th>
+                <th>AdDU Email</th>
+                <th>Year Level</th>
+                <th style="text-align: right; padding-right: 28px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-table-body">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading registered students...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 3: SCHEDULE MANAGER VIEW -->
+    <div id="tab-schedule-view" style="display: none;">
+      <section class="filter-bar" style="justify-content: space-between;">
+        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);">Manage weekly recurring classes to trigger auto-sweeps.</div>
+        <button id="btn-add-schedule" class="btn btn-export">➕ Add Class Schedule</button>
+      </section>
+
+      <section class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Day of Week</th>
+                <th>Course / Room</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th style="text-align: right; padding-right: 28px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="schedules-table-body">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading schedules...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 4: EE WHITELIST VIEW -->
+    <div id="tab-whitelist-view" style="display: none;">
+      <section class="filter-bar" style="justify-content: space-between; align-items: center;">
+        <input type="text" id="filter-whitelist-search" class="search-input" placeholder="Search whitelisted AdDU email...">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="text" id="whitelist-email-input" class="search-input" placeholder="username@addu.edu.ph" style="min-width: 260px;">
+          <button id="btn-add-whitelist" class="btn btn-export">➕ Add Email</button>
+        </div>
+      </section>
+
+      <section class="table-card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Allowed Email</th>
+                <th>Date Added</th>
+                <th style="text-align: right; padding-right: 28px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="whitelist-table-body">
+              <tr>
+                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading whitelist...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </div>
+
+  <script>
+    // Firebase Configuration Credentials
+    const firebaseConfig = {
+      apiKey: "AIzaSyBr0Pm-3l94mNhT6NSkVShQqAQOREvRP_M",
+      authDomain: "digital-logbook-f3800.firebaseapp.com",
+      projectId: "digital-logbook-f3800",
+      storageBucket: "digital-logbook-f3800.firebasestorage.app",
+      messagingSenderId: "108147766041",
+      appId: "1:108147766041:web:ebd50d55590c3aa6ca7e28",
+      measurementId: "G-6DEVWDXEC9"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    
+    // Enable debug token for local feature development
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    
+    // Initialize Firebase App Check
+    const appCheck = firebase.appCheck();
+    appCheck.activate(
+      '6Ld9qtstAAAAAIqMXsIH4FoEylJENlUVjOTvqlER', // Replace with your actual reCAPTCHA v3 or Enterprise site key
+      true // isTokenAutoRefreshEnabled
+    );
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Custom Modal System Implementation
+    function showModal({ type = 'alert', title = 'System Notification', message = '', icon = 'ℹ', inputPlaceholder = '', confirmText = 'OK', cancelText = 'Cancel', isDanger = false }) {
+      return new Promise((resolve) => {
+        const root = document.getElementById('custom-modal-root');
+        const iconEl = document.getElementById('custom-modal-icon');
+        const titleEl = document.getElementById('custom-modal-title');
+        const messageEl = document.getElementById('custom-modal-message');
+        const inputEl = document.getElementById('custom-modal-input');
+        const cancelBtn = document.getElementById('custom-modal-btn-cancel');
+        const confirmBtn = document.getElementById('custom-modal-btn-confirm');
+
+        iconEl.textContent = icon;
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        confirmBtn.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        confirmBtn.className = 'btn btn-modal-confirm';
+        if (isDanger) confirmBtn.classList.add('btn-modal-danger');
+
+        if (type === 'alert') {
+          cancelBtn.style.display = 'none';
+          inputEl.style.display = 'none';
+        } else if (type === 'confirm') {
+          cancelBtn.style.display = 'inline-flex';
+          inputEl.style.display = 'none';
+        } else if (type === 'prompt') {
+          cancelBtn.style.display = 'inline-flex';
+          inputEl.style.display = 'block';
+          inputEl.placeholder = inputPlaceholder;
+          inputEl.value = '';
+        }
+
+        root.classList.add('active');
+        if (type === 'prompt') inputEl.focus();
+
+        const closeModal = () => {
+          root.classList.remove('active');
+          cancelBtn.onclick = null;
+          confirmBtn.onclick = null;
         };
 
-        // Modal Functions
-        window.setCustomStock = function(item) {
-            activeItemKey = item;
-            const currentVal = window.currentStocks && window.currentStocks[item] !== undefined 
-                ? window.currentStocks[item] 
-                : 0;
-
-            const name = itemDisplayNames[item] || item;
-            document.getElementById('modal-title').innerText = `Set ${name} Stock`;
-            document.getElementById('modal-desc').innerText = `Enter the new stock value for ${name}.`;
-            
-            const inputEl = document.getElementById('modal-stock-input');
-            inputEl.value = currentVal;
-
-            const modal = document.getElementById('stock-modal');
-            modal.classList.add('active');
-            
-            setTimeout(() => {
-                inputEl.focus();
-                inputEl.select();
-            }, 50);
+        cancelBtn.onclick = () => {
+          closeModal();
+          resolve(null);
         };
 
-        window.closeModal = function() {
-            document.getElementById('stock-modal').classList.remove('active');
-            activeItemKey = null;
+        confirmBtn.onclick = () => {
+          closeModal();
+          if (type === 'prompt') {
+            resolve(inputEl.value);
+          } else {
+            resolve(true);
+          }
         };
+      });
+    }
 
-        window.confirmCustomStock = async function() {
-            if (!activeItemKey) return;
+    function getLastName(fullName) {
+      if (!fullName) return '';
+      const parts = fullName.trim().split(/\s+/);
+      return parts[parts.length - 1].toLowerCase();
+    }
 
-            const inputEl = document.getElementById('modal-stock-input');
-            const inputVal = inputEl.value.trim();
+    function getYearRank(yearLevel) {
+      if (!yearLevel) return 99;
+      const yearMap = { '1st year': 1, '2nd year': 2, '3rd year': 3, '4th year': 4, '5th year': 5 };
+      const key = yearLevel.trim().toLowerCase();
+      if (yearMap[key] !== undefined) return yearMap[key];
+      const match = yearLevel.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 99;
+    }
 
-            if (inputVal !== "" && !isNaN(inputVal)) {
-                const newVal = parseInt(inputVal, 10);
-                if (newVal >= 0) {
-                    await set(ref(db, 'stocks/' + activeItemKey), newVal);
-                }
-            }
-            window.closeModal();
-        };
+    // Lazy Sweep Logic to close out stale logs instantly on page load
+    async function runLazySweep(schedules, closeTime) {
+      const now = new Date();
+      const todayISO = now.toISOString().slice(0, 10);
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const dayOfWeek = now.getDay();
+      const currentHHMM = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+      
+      const daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const todayName = daysMap[dayOfWeek];
 
-        // Listen for 'Enter' key inside modal input
-        document.getElementById('modal-stock-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                window.confirmCustomStock();
-            } else if (e.key === 'Escape') {
-                window.closeModal();
-            }
-        });
+      let isClosingTimeTrigger = (closeTime && currentHHMM >= closeTime);
+      let isSweepTrigger = isClosingTimeTrigger;
 
-        // Close modal when clicking outside modal box
-        document.getElementById('stock-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'stock-modal') {
-                window.closeModal();
-            }
-        });
+      if (schedules && !isSweepTrigger) {
+          const todayClasses = schedules.filter(s => s.day === todayName);
+          for (let c of todayClasses) {
+              if (currentHHMM >= c.startTime) {
+                  isSweepTrigger = true;
+                  break;
+              }
+          }
+      }
 
-        // --- REACTIONS LOG MANAGEMENT ---
-        const reactionsRef = ref(db, 'booth_reactions');
-        
-        onValue(reactionsRef, (snapshot) => {
-            const data = snapshot.val();
-            const listEl = document.getElementById('reactions-list');
-            
-            if (!data) {
-                listEl.innerHTML = '<p style="color: var(--text-muted);">No reactions recorded yet.</p>';
-                return;
-            }
+      try {
+        const activeLogsSnapshot = await db.collection('attendance_logs').where('status', '==', 'IN').get();
+        if (activeLogsSnapshot.empty) return;
 
-            listEl.innerHTML = '';
-            
-            // Convert object to array and sort by newest first
-            const reactionsArr = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            reactionsArr.forEach(item => {
-                const dateObj = new Date(item.timestamp);
-                const timeString = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-                
-                const div = document.createElement('div');
-                div.className = 'reaction-item';
-                div.innerHTML = `
-                    <span class="reaction-text">"${item.reaction}"</span>
-                    <span class="reaction-time">${timeString}</span>
-                `;
-                listEl.appendChild(div);
+        const batch = db.batch();
+        let sweepCount = 0;
+
+        activeLogsSnapshot.forEach(doc => {
+          const log = doc.data();
+          let needsSweep = false;
+          let outTime = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          let reason = '';
+
+          // 1. Stale Log from Previous Days (Backdated to 11:59 PM)
+          if (log.date && log.date < todayISO) {
+            needsSweep = true;
+            outTime = '11:59 PM'; 
+            reason = 'Overnight / Unclosed Sweep (Backdated)';
+          } 
+          // 2. Stale Log from Earlier Shift Today
+          else if (log.date === todayISO && isSweepTrigger) {
+            needsSweep = true;
+            reason = isClosingTimeTrigger ? 'Closing Time Auto-Checkout' : 'Scheduled Class Sweep';
+          }
+
+          if (needsSweep) {
+            batch.update(doc.ref, {
+              status: 'OUT',
+              checkOutTime: outTime,
+              checkedOutBy: 'auto_sweep',
+              checkoutReason: reason,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+            sweepCount++;
+          }
         });
 
-        window.clearReactions = async function() {
-            if(confirm("Are you sure you want to delete all reaction logs?")) {
-                await remove(ref(db, 'booth_reactions'));
+        if (sweepCount > 0) {
+          await batch.commit();
+          console.log(`[Admin] Lazy sweep completed for ${sweepCount} logs on page load.`);
+        }
+      } catch (err) {
+        console.error("Error executing lazy sweep:", err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginScreen = document.getElementById('admin-login-screen');
+      const dashboardScreen = document.getElementById('admin-dashboard-screen');
+      const loginForm = document.getElementById('admin-login-form');
+      const loginErr = document.getElementById('admin-login-error');
+      const logoutBtn = document.getElementById('admin-logout-btn');
+
+      // Operating Hours UI Controls
+      const openTimeInput = document.getElementById('open-time-input');
+      const closeTimeInput = document.getElementById('close-time-input');
+      const saveHoursBtn = document.getElementById('save-hours-btn');
+
+      // Tab Elements
+      const tabBtnLogs = document.getElementById('tab-btn-logs');
+      const tabBtnStudents = document.getElementById('tab-btn-students');
+      const tabBtnSchedule = document.getElementById('tab-btn-schedule');
+      const tabBtnWhitelist = document.getElementById('tab-btn-whitelist');
+      
+      const tabLogsView = document.getElementById('tab-logs-view');
+      const tabStudentsView = document.getElementById('tab-students-view');
+      const tabScheduleView = document.getElementById('tab-schedule-view');
+      const tabWhitelistView = document.getElementById('tab-whitelist-view');
+      let currentTab = 'logs';
+
+      // Log Filters & Reset Button
+      const filterSearch = document.getElementById('filter-search');
+      const filterYear = document.getElementById('filter-year');
+      const filterStatus = document.getElementById('filter-status');
+      const filterPurpose = document.getElementById('filter-purpose');
+      const filterDate = document.getElementById('filter-date');
+      const resetLogsBtn = document.getElementById('reset-logs-btn');
+      
+      // Directory Filters & Counter
+      const filterStudentSearch = document.getElementById('filter-student-search');
+      const filterStudentYear = document.getElementById('filter-student-year');
+      const studentCountBadge = document.getElementById('student-count-badge');
+
+      // Whitelist Elements
+      const whitelistEmailInput = document.getElementById('whitelist-email-input');
+      const filterWhitelistSearch = document.getElementById('filter-whitelist-search');
+      const btnAddWhitelist = document.getElementById('btn-add-whitelist');
+      const whitelistTableBody = document.getElementById('whitelist-table-body');
+
+      const exportExcelBtn = document.getElementById('export-excel-btn');
+      const logsTableBody = document.getElementById('logs-table-body');
+      const studentsTableBody = document.getElementById('students-table-body');
+      const schedulesTableBody = document.getElementById('schedules-table-body');
+
+      const metricActivePcs = document.getElementById('metric-active-pcs');
+      const metricActiveTables = document.getElementById('metric-active-tables');
+      const metricTotalActive = document.getElementById('metric-total-active');
+      const metricLogsToday = document.getElementById('metric-logs-today');
+      const metricRegisteredStudents = document.getElementById('metric-registered-students');
+
+      const toggleLockBtn = document.getElementById('toggle-lock-btn');
+      let isLocked = false;
+
+      let rawLogs = [];
+      let rawUsers = [];
+      let rawWhitelist = [];
+      let globalSchedules = [];
+      let globalOpenTime = '';
+      let globalCloseTime = '';
+      let usersMap = {}; 
+      let unsubscribeLogs = null;
+      let unsubscribeUsers = null;
+      let unsubscribeConfig = null;
+      let unsubscribeWhitelist = null;
+
+      // Handle Tab Switch Actions
+      function switchTab(tab) {
+        currentTab = tab;
+        tabBtnLogs.classList.remove('active');
+        tabBtnStudents.classList.remove('active');
+        tabBtnSchedule.classList.remove('active');
+        tabBtnWhitelist.classList.remove('active');
+        
+        tabLogsView.style.display = 'none';
+        tabStudentsView.style.display = 'none';
+        tabScheduleView.style.display = 'none';
+        tabWhitelistView.style.display = 'none';
+
+        if (tab === 'logs') {
+          tabBtnLogs.classList.add('active');
+          tabLogsView.style.display = 'block';
+        } else if (tab === 'students') {
+          tabBtnStudents.classList.add('active');
+          tabStudentsView.style.display = 'block';
+        } else if (tab === 'schedule') {
+          tabBtnSchedule.classList.add('active');
+          tabScheduleView.style.display = 'block';
+        } else if (tab === 'whitelist') {
+          tabBtnWhitelist.classList.add('active');
+          tabWhitelistView.style.display = 'block';
+        }
+      }
+
+      tabBtnLogs.addEventListener('click', () => switchTab('logs'));
+      tabBtnStudents.addEventListener('click', () => switchTab('students'));
+      tabBtnSchedule.addEventListener('click', () => switchTab('schedule'));
+      tabBtnWhitelist.addEventListener('click', () => switchTab('whitelist'));
+
+      // Handle Authentication Observer
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          loginScreen.style.display = 'none';
+          dashboardScreen.style.display = 'block';
+          initDashboard();
+        } else {
+          loginScreen.style.display = 'block';
+          dashboardScreen.style.display = 'none';
+          if (unsubscribeLogs) unsubscribeLogs();
+          if (unsubscribeUsers) unsubscribeUsers();
+          if (unsubscribeConfig) unsubscribeConfig();
+          if (unsubscribeWhitelist) unsubscribeWhitelist();
+        }
+      });
+
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginErr.style.display = 'none';
+        const email = document.getElementById('admin-email').value.trim();
+        const password = document.getElementById('admin-pass').value;
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          loginForm.reset();
+        } catch (err) {
+          loginErr.style.display = 'block';
+        }
+      });
+
+      logoutBtn.addEventListener('click', () => auth.signOut());
+
+      async function initDashboard() {
+        // Pre-fetch global config once on load to determine sweeps before rendering listeners
+        try {
+          const configDoc = await db.collection('settings').doc('labConfig').get();
+          let schedules = [];
+          let closeTime = '';
+          if (configDoc.exists) {
+            const data = configDoc.data();
+            schedules = data.schedules || [];
+            closeTime = data.closeTime || '';
+          }
+          
+          // Execute exact runLazySweep to instantly backdate & close stale logs before UI binds
+          await runLazySweep(schedules, closeTime);
+        } catch (err) {
+          console.error("Failed executing initial runLazySweep:", err);
+        }
+
+        // Initialize real-time UI data streams
+        listenToConfig();
+        listenToUsers(); 
+        listenToLogs();
+        listenToWhitelist();
+      }
+
+      // Initialize Settings, Locks, Schedules & Operating Hours
+      function listenToConfig() {
+        if (unsubscribeConfig) unsubscribeConfig();
+        unsubscribeConfig = db.collection('settings').doc('labConfig').onSnapshot(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            isLocked = !!data.manualLock;
+            toggleLockBtn.textContent = isLocked ? '🔓 Unlock Check-Ins' : '🔒 Lock Check-Ins';
+            globalSchedules = data.schedules || [];
+            globalOpenTime = data.openTime || '';
+            globalCloseTime = data.closeTime || '';
+
+            if (openTimeInput && document.activeElement !== openTimeInput) {
+              openTimeInput.value = globalOpenTime;
             }
-        };
-    </script>
+            if (closeTimeInput && document.activeElement !== closeTimeInput) {
+              closeTimeInput.value = globalCloseTime;
+            }
+
+            renderSchedulesTable();
+          } else {
+            globalSchedules = [];
+            globalOpenTime = '';
+            globalCloseTime = '';
+            if (openTimeInput) openTimeInput.value = '';
+            if (closeTimeInput) closeTimeInput.value = '';
+            renderSchedulesTable();
+          }
+        });
+      }
+
+      // Save Operating Hours to settings/labConfig
+      if (saveHoursBtn) {
+        saveHoursBtn.addEventListener('click', async () => {
+          const openVal = openTimeInput ? openTimeInput.value : '';
+          const closeVal = closeTimeInput ? closeTimeInput.value : '';
+
+          try {
+            await db.collection('settings').doc('labConfig').set({
+              openTime: openVal,
+              closeTime: closeVal
+            }, { merge: true });
+
+            await showModal({
+              type: 'alert',
+              title: 'Operating Hours Saved',
+              icon: '⏰',
+              message: `Operating hours updated successfully: Open at ${openVal || 'N/A'}, Close at ${closeVal || 'N/A'}.`
+            });
+          } catch (err) {
+            await showModal({
+              type: 'alert',
+              title: 'Error',
+              icon: '❌',
+              message: 'Failed to update operating hours: ' + err.message
+            });
+          }
+        });
+      }
+
+      toggleLockBtn.addEventListener('click', async () => {
+        isLocked = !isLocked;
+        try {
+          await db.collection('settings').doc('labConfig').set({ manualLock: isLocked }, { merge: true });
+          await showModal({ 
+            type: 'alert', 
+            title: isLocked ? 'Check-ins Locked' : 'Check-ins Unlocked',
+            icon: isLocked ? '🔒' : '🔓',
+            message: isLocked ? "Check-ins are now LOCKED for all students." : "Check-ins are now UNLOCKED." 
+          });
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: "Failed to update lock status: " + err.message });
+        }
+      });
+
+      // Log Resetter Listener Implementation
+      if (resetLogsBtn) {
+        resetLogsBtn.addEventListener('click', async () => {
+          const confirmed = await showModal({
+            type: 'confirm',
+            title: 'Purge All Attendance Logs',
+            icon: '⚠️',
+            message: 'Are you sure you want to PERMANENTLY DELETE ALL attendance logs? This action cannot be undone.',
+            confirmText: 'Yes, Delete All',
+            isDanger: true
+          });
+
+          if (!confirmed) return;
+
+          const verifyText = await showModal({
+            type: 'prompt',
+            title: 'Security Verification',
+            icon: '🔒',
+            message: 'Type "RESET" below to confirm purging test logs:',
+            inputPlaceholder: 'RESET',
+            confirmText: 'Purge Logs Now',
+            isDanger: true
+          });
+
+          if (verifyText !== 'RESET') {
+            await showModal({ type: 'alert', title: 'Action Cancelled', icon: 'ℹ️', message: 'Verification text did not match. Log reset aborted.' });
+            return;
+          }
+
+          try {
+            const snapshot = await db.collection('attendance_logs').get();
+            if (snapshot.empty) {
+              await showModal({ type: 'alert', title: 'Notice', icon: 'ℹ️', message: 'There are no attendance logs to clear.' });
+              return;
+            }
+
+            let batch = db.batch();
+            let count = 0;
+            let totalDeleted = 0;
+
+            for (const doc of snapshot.docs) {
+              batch.delete(doc.ref);
+              count++;
+              totalDeleted++;
+              if (count === 500) {
+                await batch.commit();
+                batch = db.batch();
+                count = 0;
+              }
+            }
+
+            if (count > 0) {
+              await batch.commit();
+            }
+
+            await showModal({
+              type: 'alert',
+              title: 'Logs Cleared',
+              icon: '✅',
+              message: `Successfully deleted ${totalDeleted} log record(s). Ready for live launch!`
+            });
+          } catch (err) {
+            await showModal({
+              type: 'alert',
+              title: 'Reset Failed',
+              icon: '❌',
+              message: 'Failed to purge logs: ' + err.message
+            });
+          }
+        });
+      }
+
+      function listenToUsers() {
+        if (unsubscribeUsers) unsubscribeUsers();
+        unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
+          metricRegisteredStudents.textContent = snapshot.size;
+          rawUsers = [];
+          usersMap = {};
+          snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            rawUsers.push({ id: doc.id, ...data });
+            if (data.email) {
+              usersMap[data.email.toLowerCase()] = { fullName: data.fullName, yearLevel: data.yearLevel };
+            }
+          });
+          renderStudentsTable();
+          if (rawLogs.length > 0) renderLogsTable();
+        });
+      }
+
+      function listenToLogs() {
+        if (unsubscribeLogs) unsubscribeLogs();
+        unsubscribeLogs = db.collection('attendance_logs')
+          .orderBy('createdAt', 'desc')
+          .limit(500)
+          .onSnapshot((snapshot) => {
+            rawLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            updateMetrics(rawLogs);
+            renderLogsTable();
+          });
+      }
+
+      function listenToWhitelist() {
+        if (unsubscribeWhitelist) unsubscribeWhitelist();
+        unsubscribeWhitelist = db.collection('allowed_students').orderBy('addedAt', 'desc').onSnapshot(snapshot => {
+          rawWhitelist = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          renderWhitelistTable();
+        });
+      }
+
+      function updateMetrics(logs) {
+        const activePCs = logs.filter(l => l.status === 'IN' && l.purpose === 'PC').length;
+        const activeTables = logs.filter(l => l.status === 'IN' && l.purpose === 'Table').length;
+        const totalActive = logs.filter(l => l.status === 'IN').length;
+        
+        const todayISO = new Date().toISOString().slice(0, 10);
+        const logsTodayCount = logs.filter(l => l.date === todayISO).length;
+
+        metricActivePcs.textContent = `${activePCs} / 10`;
+        metricActiveTables.textContent = `${activeTables} / 14`;
+        metricTotalActive.textContent = `${totalActive} / 24`;
+        metricLogsToday.textContent = logsTodayCount;
+      }
+
+      function renderLogsTable() {
+        const query = filterSearch.value.trim().toLowerCase();
+        const yearVal = filterYear.value;
+        const statusVal = filterStatus.value;
+        const purposeVal = filterPurpose.value;
+        const dateVal = filterDate.value;
+
+        const filtered = rawLogs.filter(log => {
+          const emailKey = log.email ? log.email.toLowerCase() : '';
+          const currentName = (usersMap[emailKey] && usersMap[emailKey].fullName) ? usersMap[emailKey].fullName : log.fullName;
+          const currentYear = (usersMap[emailKey] && usersMap[emailKey].yearLevel) ? usersMap[emailKey].yearLevel : log.yearLevel;
+
+          const matchesSearch = !query || 
+            (currentName && currentName.toLowerCase().includes(query)) ||
+            (log.email && log.email.toLowerCase().includes(query));
+
+          const matchesYear = (yearVal === 'ALL') || (currentYear === yearVal);
+          const matchesStatus = (statusVal === 'ALL') || (log.status === statusVal);
+          const matchesPurpose = (purposeVal === 'ALL') || (log.purpose === purposeVal);
+          const matchesDate = !dateVal || (log.date === dateVal);
+          
+          log._displayName = currentName;
+          log._displayYear = currentYear;
+
+          return matchesSearch && matchesYear && matchesStatus && matchesPurpose && matchesDate;
+        });
+
+        if (filtered.length === 0) {
+          logsTableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No matching log records found.</td></tr>`;
+          return;
+        }
+
+        logsTableBody.innerHTML = filtered.map(log => {
+          const isIn = log.status === 'IN';
+          const statusBadge = isIn
+            ? `<span class="badge-status badge-in"><span class="status-dot-sm"></span>IN LAB</span>`
+            : `<span class="badge-status badge-out"><span class="status-dot-sm"></span>OUT${log.checkedOutBy === 'auto_sweep' ? ' (AUTO)' : ''}</span>`;
+          
+          const purposeBadge = log.purpose === 'PC' 
+            ? `<span class="badge-status badge-pc">💻 PC</span>` 
+            : (log.purpose === 'Table' ? `<span class="badge-status badge-table">🪑 Table</span>` : '—');
+
+          return `
+            <tr>
+              <td>${log.date || '—'}</td>
+              <td><strong>${log._displayName || 'Student'}</strong></td>
+              <td>${log.email || '—'}</td>
+              <td>${log._displayYear || '—'}</td>
+              <td>${purposeBadge}</td>
+              <td>${log.checkInTime || '—'}</td>
+              <td>${log.checkOutTime || '—'}</td>
+              <td>${statusBadge}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderStudentsTable() {
+        const query = filterStudentSearch.value.trim().toLowerCase();
+        const yearVal = filterStudentYear.value;
+
+        const filtered = rawUsers.filter(user => {
+          const name = user.fullName ? user.fullName.toLowerCase() : '';
+          const email = user.email ? user.email.toLowerCase() : '';
+          const matchesSearch = !query || name.includes(query) || email.includes(query);
+          const matchesYear = (yearVal === 'ALL') || (user.yearLevel === yearVal);
+          return matchesSearch && matchesYear;
+        });
+
+        // Update Registered Students Counter Display
+        if (studentCountBadge) {
+          if (query || yearVal !== 'ALL') {
+            studentCountBadge.textContent = `Showing: ${filtered.length} of ${rawUsers.length} Students`;
+          } else {
+            studentCountBadge.textContent = `Total Students: ${rawUsers.length}`;
+          }
+        }
+
+        filtered.sort((a, b) => {
+          const rankA = getYearRank(a.yearLevel);
+          const rankB = getYearRank(b.yearLevel);
+          if (rankA !== rankB) return rankA - rankB;
+          const lastNameA = getLastName(a.fullName);
+          const lastNameB = getLastName(b.fullName);
+          if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
+          return (a.fullName || '').localeCompare(b.fullName || '');
+        });
+
+        if (filtered.length === 0) {
+          studentsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">No registered students found.</td></tr>`;
+          return;
+        }
+
+        studentsTableBody.innerHTML = filtered.map(user => {
+          return `
+            <tr>
+              <td><strong>${user.fullName || '—'}</strong></td>
+              <td>${user.email || '—'}</td>
+              <td>${user.yearLevel || '—'}</td>
+              <td style="text-align: right;">
+                <div class="action-btn-group" style="justify-content: flex-end;">
+                  <button class="btn-action-edit" onclick="openEditStudentModal('${user.id}')">✏️ Edit</button>
+                  <button class="btn-action-danger" onclick="kickOutStudent('${user.id}', '${escapeQuotes(user.fullName)}', '${escapeQuotes(user.email)}')">🚫 Kick Out</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderSchedulesTable() {
+        if (!globalSchedules || globalSchedules.length === 0) {
+          schedulesTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">No recurring classes scheduled.</td></tr>`;
+          return;
+        }
+
+        // Sort schedules by Day, then Start Time
+        const daysOrder = { 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 'Friday': 5, 'Saturday': 6, 'Sunday': 7 };
+        const sorted = [...globalSchedules].sort((a, b) => {
+          if (daysOrder[a.day] !== daysOrder[b.day]) return daysOrder[a.day] - daysOrder[b.day];
+          return a.startTime.localeCompare(b.startTime);
+        });
+
+        schedulesTableBody.innerHTML = sorted.map(sched => {
+          return `
+            <tr>
+              <td><strong>${sched.day}</strong></td>
+              <td>${sched.courseName}</td>
+              <td>${formatTimeHHMM(sched.startTime)}</td>
+              <td>${formatTimeHHMM(sched.endTime)}</td>
+              <td style="text-align: right;">
+                <div class="action-btn-group" style="justify-content: flex-end;">
+                  <button class="btn-action-edit" onclick="openScheduleModal('${sched.id}')">✏ Edit</button>
+                  <button class="btn-action-danger" onclick="deleteSchedule('${sched.id}')">🗑️ Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderWhitelistTable() {
+        if (!rawWhitelist || rawWhitelist.length === 0) {
+          whitelistTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">No emails in whitelist.</td></tr>`;
+          return;
+        }
+
+        const query = filterWhitelistSearch ? filterWhitelistSearch.value.trim().toLowerCase() : '';
+        let filtered = rawWhitelist;
+        if (query) {
+          filtered = rawWhitelist.filter(item => item.email && item.email.toLowerCase().includes(query));
+        }
+
+        if (filtered.length === 0) {
+          whitelistTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 30px;">No whitelisted emails matching "${query}".</td></tr>`;
+          return;
+        }
+
+        whitelistTableBody.innerHTML = filtered.map(item => {
+          const dateStr = item.addedAt 
+            ? (item.addedAt.toDate ? item.addedAt.toDate().toLocaleString() : new Date(item.addedAt).toLocaleString()) 
+            : 'Just now';
+            
+          return `
+            <tr>
+              <td><strong>${item.email}</strong></td>
+              <td>${dateStr}</td>
+              <td style="text-align: right;">
+                <div class="action-btn-group" style="justify-content: flex-end;">
+                  <button class="btn-action-danger" onclick="removeWhitelistEmail('${item.id}')">🗑️ Remove</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function formatTimeHHMM(timeStr) {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':');
+        let hours = parseInt(h);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        return `${hours.toString().padStart(2, '0')}:${m} ${ampm}`;
+      }
+
+      function escapeQuotes(str) {
+        return (str || '').replace(/'/g, "\\'");
+      }
+
+      // Schedule Manager Helpers
+      window.openScheduleModal = function(id = null) {
+        const modal = document.getElementById('schedule-modal-root');
+        if (id) {
+          const sched = globalSchedules.find(s => s.id === id);
+          if (sched) {
+            document.getElementById('schedule-id').value = sched.id;
+            document.getElementById('schedule-course').value = sched.courseName;
+            document.getElementById('schedule-day').value = sched.day;
+            document.getElementById('schedule-start').value = sched.startTime;
+            document.getElementById('schedule-end').value = sched.endTime;
+          }
+        } else {
+          document.getElementById('schedule-id').value = '';
+          document.getElementById('schedule-form').reset();
+        }
+        modal.classList.add('active');
+      };
+
+      document.getElementById('btn-add-schedule').addEventListener('click', () => {
+        openScheduleModal();
+      });
+
+      document.getElementById('schedule-cancel').addEventListener('click', () => {
+        document.getElementById('schedule-modal-root').classList.remove('active');
+      });
+
+      document.getElementById('schedule-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('schedule-id').value || `sched_${Date.now()}`;
+        const courseName = document.getElementById('schedule-course').value.trim();
+        const day = document.getElementById('schedule-day').value;
+        const startTime = document.getElementById('schedule-start').value;
+        const endTime = document.getElementById('schedule-end').value;
+
+        const newSchedule = { id, courseName, day, startTime, endTime };
+        const otherSchedules = globalSchedules.filter(s => s.id !== id);
+        const updatedSchedules = [...otherSchedules, newSchedule];
+
+        try {
+          await db.collection('settings').doc('labConfig').set({ schedules: updatedSchedules }, { merge: true });
+          document.getElementById('schedule-modal-root').classList.remove('active');
+          await showModal({ type: 'alert', title: 'Schedule Saved', icon: '✅', message: `Class schedule for ${courseName} successfully saved.` });
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: "Failed to save schedule: " + err.message });
+        }
+      });
+
+      window.deleteSchedule = async function(id) {
+        const confirmDel = await showModal({
+          type: 'confirm',
+          title: 'Delete Schedule',
+          icon: '⚠️',
+          message: `Are you sure you want to remove this recurring class?`,
+          confirmText: 'Delete',
+          isDanger: true
+        });
+
+        if (!confirmDel) return;
+
+        const updatedSchedules = globalSchedules.filter(s => s.id !== id);
+        try {
+          await db.collection('settings').doc('labConfig').set({ schedules: updatedSchedules }, { merge: true });
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: 'Failed to delete schedule: ' + err.message });
+        }
+      };
+
+      // Student Edit Functions
+      window.openEditStudentModal = function(userId) {
+        const user = rawUsers.find(u => u.id === userId);
+        if (!user) return;
+        document.getElementById('edit-student-id').value = user.id;
+        document.getElementById('edit-student-name').value = user.fullName || '';
+        document.getElementById('edit-student-email').value = user.email || '';
+        document.getElementById('edit-student-year').value = user.yearLevel || '1st Year';
+        document.getElementById('edit-student-modal-root').classList.add('active');
+      };
+
+      window.kickOutStudent = async function(userId, fullName, email) {
+        const confirmed = await showModal({
+          type: 'confirm',
+          title: 'Kick Out Student',
+          icon: '⚠️',
+          message: `Are you sure you want to kick out/remove ${fullName || email} from the registered database?`,
+          confirmText: 'Kick Out',
+          isDanger: true
+        });
+
+        if (!confirmed) return;
+
+        try {
+          await db.collection('users').doc(userId).delete();
+          await showModal({ type: 'alert', title: 'Student Removed', icon: '✅', message: `${fullName || email} removed.` });
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: 'Failed to delete student: ' + err.message });
+        }
+      };
+
+      document.getElementById('edit-student-cancel').addEventListener('click', () => {
+        document.getElementById('edit-student-modal-root').classList.remove('active');
+      });
+
+      document.getElementById('edit-student-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userId = document.getElementById('edit-student-id').value;
+        const fullName = document.getElementById('edit-student-name').value.trim();
+        const email = document.getElementById('edit-student-email').value.trim();
+        const yearLevel = document.getElementById('edit-student-year').value;
+
+        try {
+          await db.collection('users').doc(userId).update({ fullName, email, yearLevel });
+          document.getElementById('edit-student-modal-root').classList.remove('active');
+          await showModal({ type: 'alert', title: 'Profile Updated', icon: '✅', message: `Student record successfully updated!` });
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: 'Failed to update student profile: ' + err.message });
+        }
+      });
+
+      // Whitelist Logic
+      btnAddWhitelist.addEventListener('click', async () => {
+        const emailRaw = whitelistEmailInput.value.trim();
+        const cleanEmail = emailRaw.toLowerCase();
+        
+        if (!cleanEmail.endsWith('@addu.edu.ph')) {
+          await showModal({ type: 'alert', title: 'Invalid Email', icon: '❌', message: 'Email must end with @addu.edu.ph' });
+          return;
+        }
+
+        try {
+          await db.collection('allowed_students').doc(cleanEmail).set({
+            email: cleanEmail,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          whitelistEmailInput.value = '';
+          await showModal({ type: 'alert', title: 'Success', icon: '✅', message: 'Email successfully added to whitelist.' });
+        } catch (error) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: 'Failed to add email: ' + error.message });
+        }
+      });
+
+      window.removeWhitelistEmail = async function(emailId) {
+        const confirmDel = await showModal({
+          type: 'confirm',
+          title: 'Remove Whitelist Access',
+          icon: '⚠️',
+          message: `Are you sure you want to remove ${emailId} from the whitelist? This immediately revokes their logbook portal access.`,
+          confirmText: 'Remove',
+          isDanger: true
+        });
+
+        if (!confirmDel) return;
+
+        try {
+          await db.collection('allowed_students').doc(emailId).delete();
+        } catch (err) {
+          await showModal({ type: 'alert', title: 'Error', icon: '❌', message: 'Failed to remove email: ' + err.message });
+        }
+      };
+
+      // Filter Listeners
+      [filterSearch, filterYear, filterStatus, filterPurpose, filterDate].forEach(el => {
+        el.addEventListener('input', renderLogsTable);
+        el.addEventListener('change', renderLogsTable);
+      });
+
+      [filterStudentSearch, filterStudentYear].forEach(el => {
+        el.addEventListener('input', renderStudentsTable);
+        el.addEventListener('change', renderStudentsTable);
+      });
+
+      if (filterWhitelistSearch) {
+        filterWhitelistSearch.addEventListener('input', renderWhitelistTable);
+      }
+
+      // ExcelJS Export Logic
+      exportExcelBtn.addEventListener('click', async () => {
+        if (typeof ExcelJS === 'undefined') {
+            await showModal({ type: 'alert', title: 'Export Error', icon: '❌', message: 'ExcelJS library failed to load.' });
+            return;
+        }
+
+        const workbook = new ExcelJS.Workbook();
+
+        if (currentTab === 'logs') {
+          if (!rawLogs || rawLogs.length === 0) {
+            await showModal({ type: 'alert', title: 'Export Failed', icon: '📉', message: "No log data available to export." });
+            return;
+          }
+
+          const worksheet = workbook.addWorksheet('Attendance Logs');
+          worksheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1 }];
+
+          worksheet.columns = [
+            { header: 'Date', key: 'date', style: { alignment: { horizontal: 'center' } } },
+            { header: 'Student Name', key: 'name', style: { alignment: { horizontal: 'left' } } },
+            { header: 'AdDU Email', key: 'email', style: { alignment: { horizontal: 'left' } } },
+            { header: 'Year Level', key: 'year', style: { alignment: { horizontal: 'center' } } },
+            { header: 'Purpose', key: 'purpose', style: { alignment: { horizontal: 'left' } } },
+            { header: 'Check In', key: 'checkIn', style: { alignment: { horizontal: 'center' } } },
+            { header: 'Check Out', key: 'checkOut', style: { alignment: { horizontal: 'center' } } },
+            { header: 'Status', key: 'status', style: { alignment: { horizontal: 'center' } } },
+            { header: 'Action By', key: 'actionBy', style: { alignment: { horizontal: 'center' } } }
+          ];
+
+          // Format Header Row
+          const headerRow = worksheet.getRow(1);
+          headerRow.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          });
+
+          rawLogs.forEach((log, index) => {
+            const emailKey = log.email ? log.email.toLowerCase() : '';
+            const currentName = (usersMap[emailKey] && usersMap[emailKey].fullName) ? usersMap[emailKey].fullName : (log.fullName || '');
+            const currentYear = (usersMap[emailKey] && usersMap[emailKey].yearLevel) ? usersMap[emailKey].yearLevel : (log.yearLevel || '');
+
+            const row = worksheet.addRow({
+              date: log.date || '',
+              name: currentName,
+              email: log.email || '',
+              year: currentYear,
+              purpose: log.purpose || '',
+              checkIn: log.checkInTime || '',
+              checkOut: log.checkOutTime || '',
+              status: log.status || '',
+              actionBy: log.checkedOutBy || 'student'
+            });
+
+            // Alternate Row Colors
+            const bgColor = index % 2 === 0 ? 'FFFFFFFF' : 'FFF3F4F6'; 
+            row.eachCell({ includeEmpty: true }, (cell) => {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+            });
+
+            // Status Badge Formatting
+            const statusCell = row.getCell('status');
+            if (log.status === 'IN') {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+              statusCell.font = { color: { argb: 'FF065F46' }, bold: true };
+            } else if (log.status === 'OUT') {
+              statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+              statusCell.font = { color: { argb: 'FF991B1B' }, bold: true };
+            }
+          });
+
+          autoFitColumns(worksheet);
+          triggerDownload(workbook, `FUSEE_COMPUTER-LABORATORY_LOGBOOK_RECORD.xlsx`);
+
+        } else if (currentTab === 'students') {
+          if (!rawUsers || rawUsers.length === 0) {
+            await showModal({ type: 'alert', title: 'Export Failed', icon: '📉', message: "No registered students data to export." });
+            return;
+          }
+
+          const sortedUsers = [...rawUsers].sort((a, b) => {
+            const rankA = getYearRank(a.yearLevel);
+            const rankB = getYearRank(b.yearLevel);
+            if (rankA !== rankB) return rankA - rankB;
+            const lastNameA = getLastName(a.fullName);
+            const lastNameB = getLastName(b.fullName);
+            if (lastNameA !== lastNameB) return lastNameA.localeCompare(lastNameB);
+            return (a.fullName || '').localeCompare(b.fullName || '');
+          });
+
+          const worksheet = workbook.addWorksheet('Registered Students');
+          worksheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 1 }];
+
+          worksheet.columns = [
+            { header: 'Student Name', key: 'name', style: { alignment: { horizontal: 'left' } } },
+            { header: 'AdDU Email', key: 'email', style: { alignment: { horizontal: 'left' } } },
+            { header: 'Year Level', key: 'year', style: { alignment: { horizontal: 'center' } } }
+          ];
+
+          const headerRow = worksheet.getRow(1);
+          headerRow.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          });
+
+          sortedUsers.forEach((user, index) => {
+            const row = worksheet.addRow({
+              name: user.fullName || '',
+              email: user.email || '',
+              year: user.yearLevel || ''
+            });
+            const bgColor = index % 2 === 0 ? 'FFFFFFFF' : 'FFF3F4F6';
+            row.eachCell({ includeEmpty: true }, (cell) => {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+            });
+          });
+
+          autoFitColumns(worksheet);
+          triggerDownload(workbook, `FUSEE_Registered_Students_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+        } else {
+            await showModal({ type: 'alert', title: 'Notice', icon: 'ℹ️', message: "Export is only available for Logs and Student Directory." });
+        }
+      });
+
+      // Helper function to dynamically auto-fit columns
+      function autoFitColumns(worksheet) {
+        worksheet.columns.forEach(column => {
+          let maxLength = 0;
+          column.eachCell({ includeEmpty: true }, cell => {
+            const columnLength = cell.value ? cell.value.toString().length : 10;
+            if (columnLength > maxLength) {
+              maxLength = columnLength;
+            }
+          });
+          column.width = maxLength < 10 ? 10 : maxLength + 2;
+        });
+      }
+
+      // Helper function to compile and download the buffer
+      async function triggerDownload(workbook, filename) {
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
+    });
+  </script>
 </body>
 </html>
